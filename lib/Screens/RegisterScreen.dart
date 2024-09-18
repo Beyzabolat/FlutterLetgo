@@ -75,7 +75,7 @@ class _RegisterPageState extends State<Registerscreen> {
     );
 
      if (result) {
-  // Diyaloğu göster ve tamamlanana kadar bekle
+  
   await showDialog(
     context: context,
     builder: (context) => AlertDialog(
@@ -90,10 +90,10 @@ class _RegisterPageState extends State<Registerscreen> {
     ),
   );
   
-  // Alanları temizle
+
   _clearFields();
 
-  // Yönlendirme işlemini diyalog kapandıktan sonra yap
+
   Navigator.pushReplacement(
     context,
     MaterialPageRoute(builder: (context) => Loginscreen()),

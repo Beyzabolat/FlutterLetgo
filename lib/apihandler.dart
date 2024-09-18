@@ -7,7 +7,7 @@ import 'package:http/io_client.dart';
 import 'package:http/http.dart' as http;
 
 class ApiHandler {
-  final String baseUri = "https://192.168.1.47:7110/api/tables";
+  final String baseUri = "https://192.168.1.145:7110/api/tables";
 
    final http.Client client = IOClient(
     HttpClient()

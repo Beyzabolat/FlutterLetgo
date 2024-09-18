@@ -31,7 +31,7 @@ class MyTextButton extends StatelessWidget {
             (states) => Colors.black12,
           ),
         ),
-        onPressed: onTap, // onTap düzgün şekilde tanımlı
+        onPressed: onTap, 
         child: Text(
           buttonName,
           style: kButtonText.copyWith(color: textColor),
