@@ -9,13 +9,13 @@ class MyPasswordField extends StatelessWidget {
     required this.isPasswordVisible,
     this.prefixIcon,
     required this.onTap,
-    required this.controller, // controller burada doğru şekilde tanımlanıyor
+    required this.controller, 
   }) : super(key: key);
 
   final bool isPasswordVisible;
   final VoidCallback onTap;
   final IconData? prefixIcon;
-  final TextEditingController controller; // controller parametresi eklendi
+  final TextEditingController controller; 
 
   @override
   Widget build(BuildContext context) {

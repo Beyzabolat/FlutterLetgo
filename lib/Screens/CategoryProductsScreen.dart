@@ -5,13 +5,15 @@ import 'package:flutter/material.dart';
 
 class CategoryProductsScreen extends StatefulWidget {
   final String categoryName;
-  final String categoryRef; 
+  final String categoryRef;
   final List<Map<String, dynamic>> allAds;
+  final String clientRef;
 
   CategoryProductsScreen({
     required this.categoryName,
-    required this.categoryRef, 
+    required this.categoryRef,
     required this.allAds,
+    required this.clientRef,
   });
 
   @override
@@ -30,7 +32,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
   void _filterAdsByCategory() {
     setState(() {
       categoryAds = widget.allAds.where((ad) {
-        return ad['CategoryRef'] == widget.categoryRef; 
+        return ad['CategoryRef'] == widget.categoryRef;
       }).toList();
     });
   }
@@ -38,7 +40,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, 
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('${widget.categoryName} Ürünleri'),
       ),
@@ -68,7 +70,8 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     );
   }
 
-  Widget _buildProductCard(String title, String description, String imageUrl, IconData icon, Color color, BuildContext context) {
+  Widget _buildProductCard(String title, String description, String imageUrl,
+      IconData icon, Color color, BuildContext context) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
       child: Column(
@@ -77,7 +80,8 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
             child: imageUrl.isNotEmpty
                 ? Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(15.0)),
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(15.0)),
                       image: DecorationImage(
                         image: NetworkImage(imageUrl),
                         fit: BoxFit.cover,

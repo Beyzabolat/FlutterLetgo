@@ -12,6 +12,9 @@ class Advertdetails extends StatelessWidget {
   final double price;
   final String location;
   final int quantity;
+  final String advertRef; 
+  final String clientRef;   
+
 
   const Advertdetails({
     Key? key,
@@ -24,6 +27,9 @@ class Advertdetails extends StatelessWidget {
     required this.price,
     required this.location,
     required this.quantity,
+    required this.advertRef,
+    required this.clientRef,
+
   }) : super(key: key);
 
   @override

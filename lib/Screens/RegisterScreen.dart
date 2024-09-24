@@ -1,5 +1,6 @@
 // ignore_for_file: file_names, use_key_in_widget_constructors, library_private_types_in_public_api, prefer_const_constructors, use_build_context_synchronously
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_guid/flutter_guid.dart';
 import 'package:flutter/services.dart';
@@ -143,6 +144,12 @@ class _RegisterPageState extends State<Registerscreen> {
     _passwordController.clear();
     _confirmPasswordController.clear();
   }
+void _notLogin() {
+    Navigator.pushReplacement(
+      context,
+      CupertinoPageRoute(builder: (context) => Loginscreen()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -245,9 +252,7 @@ class _RegisterPageState extends State<Registerscreen> {
                             inputType: TextInputType.text,
                             prefixIcon: Icons.lock,
                             obscureText: passwordVisibility,
-                            suffixIcon: passwordVisibility
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                          
                           ),
                           SizedBox(height: 10),
                            MyTextField(
@@ -267,17 +272,15 @@ class _RegisterPageState extends State<Registerscreen> {
                           "Zaten bir hesabın var mı? ",
                           style: kBodyText,
                         ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
+                        GestureDetector(
+                          onTap: _notLogin,
                           child: Text(
-                            "Giriş Yap",
+                            'Kayıt Ol',
                             style: kBodyText.copyWith(
                               color: Colors.white,
                             ),
                           ),
-                        ),
+                        )
                       ],
                     ),
                     SizedBox(height: 20),

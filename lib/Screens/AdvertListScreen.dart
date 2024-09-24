@@ -56,22 +56,7 @@ class _AdvertListScreenState extends State<AdvertListScreen> {
                   final ad = ads[index];
                   return GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Advertdetails(
-                            title: ad['Name'] ?? 'İlan ${index + 1}',
-                            description: ad['Description'] ?? 'İlan Açıklaması ${index + 1}',
-                            imageUrl: ad['ImageUrl'] ?? '', 
-                            category: ad['Category'] ?? 'Kategori ${index + 1}',
-                            brand: ad['Brand'] ?? 'Marka ${index + 1}', 
-                            model: ad['Model'] ?? 'Model ${index + 1}', 
-                            price: ad['Price']?.toDouble() ?? 0.0, 
-                            location: ad['Location'] ?? 'Konum ${index + 1}', 
-                            quantity: ad['Quantity'] ?? 1, 
-                          ),
-                        ),
-                      );
+                      // - Farklı sayfa eklenecek..
                     },
                     child: _buildAdvertCard(
                       context,

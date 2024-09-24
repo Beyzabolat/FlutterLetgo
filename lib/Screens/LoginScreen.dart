@@ -13,10 +13,10 @@ class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
 
   @override
-  State<Loginscreen> createState() => _CombinedLoginScreenState();
+  State<Loginscreen> createState() => _LoginScreenState();
 }
 
-class _CombinedLoginScreenState extends State<Loginscreen> {
+class _LoginScreenState extends State<Loginscreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final ApiHandler _apiHandler = ApiHandler();
@@ -38,25 +38,26 @@ class _CombinedLoginScreenState extends State<Loginscreen> {
   }
 
   Future<void> _login() async {
-    final username = _usernameController.text;
+    final usernameOrEmail  = _usernameController.text;
     final password = _passwordController.text;
     String clientRef = "";
     _usernameController.text = "";
     _passwordController.text = "";
 
-    if (username.trim().isEmpty || password.trim().isEmpty) {
-      print('Fields are empty: Username: $username, Password: $password');
+    if (usernameOrEmail .trim().isEmpty || password.trim().isEmpty) {
+      print('Fields are empty: Username/Email: $usernameOrEmail , Password: $password');
       _showDialog('Giriş Başarısız', 'Kutucuklar boş bırakılamaz.');
       return;
     }
 
     final isValidUser = _clientCards.any((clientCard) =>
-    clientCard['UserName'] == username && clientCard['UserPassword'] == password);
+     (clientCard['UserName'] == usernameOrEmail || clientCard['Email'] == usernameOrEmail) &&
+      clientCard['UserPassword'] == password);
 
     if (isValidUser) {
       clientRef = _clientCards.firstWhere((clientCard) =>
-          clientCard['UserName'] == username &&
-          clientCard['UserPassword'] == password)['Ref'];
+          (clientCard['UserName'] == usernameOrEmail || clientCard['Email'] == usernameOrEmail) &&
+        clientCard['UserPassword'] == password)['Ref'];
       _showDialog('Giriş Başarılı', 'Hoşgeldiniz.');
       Navigator.pushReplacement(
         context,

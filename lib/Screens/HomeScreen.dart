@@ -1,11 +1,12 @@
-// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, sized_box_for_whitespace, use_key_in_widget_constructors, unused_import, file_names, prefer_const_constructors_in_immutables, library_private_types_in_public_api, avoid_print, prefer_interpolation_to_compose_strings
+// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, sized_box_for_whitespace, use_key_in_widget_constructors, unused_import, file_names, prefer_const_constructors_in_immutables, library_private_types_in_public_api, avoid_print, prefer_interpolation_to_compose_strings, unused_element
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:http/http.dart' as http;
-import 'dart:io';
 import 'package:project/ApiHandler.dart';
 import 'package:project/Screens/AdvertAddScreen.dart';
+import 'package:project/Screens/AdvertDetails.dart';
 import 'package:project/Screens/AdvertListScreen.dart';
 import 'package:project/Screens/CategoryProductsScreen.dart';
 import 'package:project/Screens/FavoriteScreen.dart';
@@ -13,7 +14,7 @@ import 'package:project/Screens/LoginScreen.dart';
 import 'package:project/Screens/MessageScreen.dart';
 import 'package:project/Screens/ProfileDetails.dart';
 import 'package:project/Screens/ProfileScreen.dart';
-
+import 'package:project/constants.dart';
 
 void main() => runApp(MyApp());
 
@@ -21,20 +22,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Navigation Bar',
-      theme: ThemeData(
-        primarySwatch: Colors.red,
-      ),
-      home: MyHomePage(clientRef: ''),
+      home: MyHomePage(clientRef: 'your_client_ref_here'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   final String clientRef;
-
   MyHomePage({required this.clientRef});
-
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -48,9 +43,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     print('ClientRef: ${widget.clientRef}');
-    
+
     _tabs.addAll([
-      HomeScreen(),
+      HomePage(clientRef: widget.clientRef),
       FavoritesScreen(),
       Messagescreen(),
       ProfileScreen(clientRef: widget.clientRef),
@@ -60,11 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, 
-      appBar: AppBar(
-        title: Text('Benim Parçam'),
-           backgroundColor: Colors.red, // Optional: Set the AppBar color
-      ),
+      backgroundColor: Colors.white,
       body: _tabs[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -73,48 +64,115 @@ class _MyHomePageState extends State<MyHomePage> {
             _currentIndex = index;
           });
         },
-        items: [
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor:Color.fromRGBO(255, 145, 77, 1), 
+      unselectedItemColor: Color.fromRGBO(255, 145, 77, 1), 
+        items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home, size: 28),
-            label: 'Ana Sayfa',
-            tooltip: 'Ana Sayfa',
+            icon: Icon(Icons.home),
+            label: "Home",
+           
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite, size: 28),
-            label: 'Favoriler',
-            tooltip: 'Favoriler',
+            icon: Icon(Icons.favorite_border),
+            label: "Favorites",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.message, size: 28),
-            label: 'Mesajlar',
-            tooltip: 'Mesajlar',
+            icon: Icon(Icons.chat_bubble_outline_outlined),
+            label: "Messages",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person, size: 28),
-            label: 'Profil',
-            tooltip: 'Profil',
+            icon: Icon(Icons.person),
+            label: "Profile",
           ),
         ],
-        selectedItemColor: Colors.redAccent,
-        unselectedItemColor: Colors.grey[600],
-        backgroundColor: Colors.white,
-        type: BottomNavigationBarType.fixed,
-        showUnselectedLabels: true,
-        showSelectedLabels: true,
-        selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
-        unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
-        elevation: 8.0,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.red.withOpacity(0.2),
+              spreadRadius: 5,
+            )
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AdvertAddScreen(
+                  clientRef: widget.clientRef,
+                  categoryRef:
+                      'Ref', 
+                ),
+              ),
+            );
+          },
+          elevation: 0,
+          backgroundColor: const Color.fromRGBO(255, 145, 77, 1),
+          foregroundColor: Colors.white,
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
+class HomePage extends StatelessWidget {
+  final String clientRef;
+  HomePage({required this.clientRef});
+
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      backgroundColor: const Color(0xff151617),
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor:  const Color(0xff151617),
+        foregroundColor: Colors.white,
+        leading:
+            IconButton(onPressed: () {}, icon: const Icon(IconlyLight.search)),
+        title: ActionChip(
+          label: const Text("Konum Giriniz"),
+          shape: const StadiumBorder(),
+          backgroundColor: const Color(0xff272b30),
+          labelStyle: const TextStyle(color: Colors.white),
+          avatar: const Icon(IconlyLight.location, color: Colors.white),
+          side: const BorderSide(width: 0),
+          onPressed: () {},
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: Badge(
+              backgroundColor: theme.colorScheme.primary,
+              alignment: const Alignment(1, -1.5),
+              child: const Icon(IconlyLight.notification),
+            ),
+          ),
+        ],
+      ),
+      body: Homescreen(
+        clientRef: '',
+      ), 
+    );
+  }
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class Homescreen extends StatefulWidget {
+  final String clientRef;
+  Homescreen({required this.clientRef});
+  @override
+  _HomePageBodyState createState() => _HomePageBodyState();
+}
+
+class _HomePageBodyState extends State<Homescreen> {
   List<Map<String, dynamic>> categories = [];
   List<Map<String, dynamic>> ads = [];
   List<Map<String, dynamic>> filteredAds = [];
@@ -146,8 +204,10 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final response = await ApiHandler().fetchAds();
       setState(() {
-        ads = List<Map<String, dynamic>>.from(response).where((ad) => ad['status'] != 0).toList();
-        filteredAds = ads; 
+        ads = List<Map<String, dynamic>>.from(response)
+            .where((ad) => ad['status'] != 0)
+            .toList();
+        filteredAds = ads;
       });
     } catch (e) {
       print('Error loading ads: $e');
@@ -166,82 +226,186 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return ListView(
-      padding: EdgeInsets.all(16.0),
       children: [
-        Text(
-          'Kategoriler',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Text(
+                  "Kategoriler",
+                  style: theme.textTheme.headlineMedium
+                      ?.copyWith(color: Colors.white),
+                ),
+              ),
+              SizedBox(
+                height: 100,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    return _buildCategoryCard(
+        category['Name'] ?? 'Kategori',
+        Icons.category, // You can change this to an appropriate icon
+        Color.fromRGBO(255, 145, 77, 1), // You can customize the color
+        context,
+        category,
+      );
+                  },
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 15),
+                  itemCount: categories.length,
+                ),
+              )
+            ],
+          ),
         ),
-        SizedBox(height: 10),
-       Container(
-  height: 100,
-  child: SingleChildScrollView(
+        Container(
+          margin: const EdgeInsets.only(top: 10),
+          constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height * 0.7),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "İlanlar",
+                      style: theme.textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    TextButton.icon(
+                      onPressed: () {},
+                      icon: const Text("Tümünü Gör"),
+                      label: const Icon(IconlyLight.arrowRight2, size: 20),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+  height: 220,
+  child: ListView.separated(
     scrollDirection: Axis.horizontal,
-    child: Row(
-      children: categories.map((category) {
-        return _buildCategoryCard(
-          category['Name'] ?? 'Kategori',
-          Icons.category,
-          Colors.red,
-          context,
-          category,
-        );
-      }).toList(),
-    ),
-  ),
-),
+    padding: const EdgeInsets.only(left: 16),
+    itemBuilder: (context, index) {
+       final ad = filteredAds[index];
 
-        SizedBox(height: 20),
-        Text(
-          'Ürünler',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 10),
-        TextField(
-          controller: searchController,
-          decoration: InputDecoration(
-            hintText: 'Arama yapın..',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(20.0),
+      return GestureDetector(
+        onTap: () {
+          // Navigate to product detail page
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Advertdetails(
+                clientRef: widget.clientRef,
+                      advertRef: ad['Ref'] ?? '',
+                      title: ad['Name'] ?? 'Başlık',
+                      description: ad['Description'] ?? 'Açıklama',
+                      imageUrl: ad['Image'] ?? '',
+                      category: ad['Category'] ?? 'Kategori',
+                      brand: ad['Brand'] ?? 'Marka',
+                      model: ad['Model'] ?? 'Model',
+                      price: ad['Price']?.toDouble() ?? 0.0,
+                      location: ad['Location'] ?? 'Konum',
+                      quantity: ad['Quantity'] ?? 0,
+
+
+
+                
+              ),
             ),
-            prefixIcon: Icon(Icons.search),
+          );
+        },
+        child: SizedBox(
+          width: 200,
+          child: _buildProductCard(
+            ad['Name'] ?? 'error',
+            (ad['Price'] ?? 0).toString() + ' TL',
+            ad['Image'] ?? 'assets/screwdriver.png', // Default image if no image URL
+            Icons.shopping_cart, // Default icon if needed
+            Colors.grey.shade100, // Default color for background
+            context,
           ),
         ),
-        SizedBox(height: 10),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 10.0,
-            mainAxisSpacing: 10.0,
-            childAspectRatio: 0.75,
+      );
+    },
+    separatorBuilder: (context, index) => const SizedBox(width: 15),
+    itemCount: ads.length,
+  ),
+)
+            ],
           ),
-          itemCount: filteredAds.length,
-          itemBuilder: (BuildContext context, int index) {
-            final ad = filteredAds[index];
-            return _buildProductCard(
-              ad['Name'] ?? 'error',
-              (ad['Price'] ?? 0).toString() + ' TL',
-              ad['Image'] ?? '',
-              Icons.shopping_bag,
-              Colors.blueAccent,
-              context,
-            );
-          },
-        ),
+        )
       ],
     );
   }
-
-  Widget _buildCategoryCard(String title, IconData icon, Color color, BuildContext context, Map<String, dynamic> category) {
+// Product Card Function
+ Widget _buildProductCard(String title, String description, String imageUrl,
+    IconData icon, Color color, BuildContext context) {
+  return Card(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+    child: Column(
+      children: [
+        Expanded(
+          child: imageUrl.isNotEmpty
+              ? Container(
+                  decoration: BoxDecoration(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(15.0)),
+                    image: DecorationImage(
+                      image: NetworkImage(imageUrl),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                )
+              : Container(
+                  color: color,
+                  child: Center(
+                    child: Icon(icon, size: 50, color: Colors.white),
+                  ),
+                ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 4),
+              Text(
+                description,
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+ Widget _buildCategoryCard(String title, IconData icon, Color color, BuildContext context, Map<String, dynamic> category) {
   return Container(
-    width: 150,
+    height: double.maxFinite,
+    width: 100,
     margin: EdgeInsets.only(right: 10),
+     padding: const EdgeInsets.all(4),
     decoration: BoxDecoration(
-      color: color.withOpacity(0.2),
-      borderRadius: BorderRadius.circular(10),
+      color: Color.fromRGBO(255, 145, 77, 1),
+      borderRadius: BorderRadius.circular(20),
     ),
     child: GestureDetector(
       onTap: () {
@@ -250,8 +414,9 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(
             builder: (context) => CategoryProductsScreen(
               categoryName: title,
-              categoryRef: category['Ref'], 
-              allAds: ads,
+              categoryRef: category['Ref'],
+              allAds: ads, 
+              clientRef: widget.clientRef,
             ),
           ),
         );
@@ -259,68 +424,25 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 40, color: color),
-          SizedBox(height: 10),
+          Image.asset(
+            'assets/screwdriver.png', // Replace with category-specific image if available
+            width: 50,
+          ),
+          SizedBox(height: 4), // Adjusted height for better spacing
           Text(
             title,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           ),
         ],
       ),
     ),
   );
 }
-
-  Widget _buildProductCard(String title, String description, String imageUrl, IconData icon, Color color, BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-      child: Column(
-        children: [
-          Expanded(
-            child: imageUrl.isNotEmpty
-                ? Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(15.0)),
-                      image: DecorationImage(
-                        image: NetworkImage(imageUrl),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  )
-                : Container(
-                    color: color,
-                    child: Center(
-                      child: Icon(icon, size: 50, color: Colors.white),
-                    ),
-                  ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  description,
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 extension on ApiHandler {
-  // ignore: unused_element
   fetchAds() async {
-    final uri = Uri.parse('$baseUri/Advert'); 
+    final uri = Uri.parse('$baseUri/Advert');
     try {
       final response = await client.get(uri, headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
