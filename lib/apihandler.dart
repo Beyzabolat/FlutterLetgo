@@ -1,17 +1,19 @@
-// ignore_for_file: unnecessary_string_interpolations, avoid_print, unused_import, depend_on_referenced_packages, non_constant_identifier_names
+// ignore_for_file: unnecessary_string_interpolations, avoid_print, unused_import, depend_on_referenced_packages, non_constant_identifier_names, unused_local_variable
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter_guid/flutter_guid.dart';
-import 'package:http/io_client.dart'; 
+import 'package:http/io_client.dart';
 import 'package:http/http.dart' as http;
 
 class ApiHandler {
   final String baseUri = "https://192.168.1.145:7110/api/tables";
 
-   final http.Client client = IOClient(
+  final http.Client client = IOClient(
     HttpClient()
-      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true,
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true,
   );
 
   Future<bool> login(
@@ -120,7 +122,7 @@ class ApiHandler {
     required String artikelNo,
     required double price,
     required double kdv,
-    required String? imagePath,
+    required Uint8List? imageBytes,
     required String description,
     required int status,
     required String location,
@@ -128,6 +130,8 @@ class ApiHandler {
     required String clientRef,
   }) async {
     final uri = Uri.parse('$baseUri/Advert');
+    // Base64 formatında resim verisi oluştur
+   String? base64Image = imageBytes != null ? base64Encode(imageBytes) : null;
     final advertData = {
       'Ref': ref?.toString(),
       'Code': code,
@@ -138,7 +142,7 @@ class ApiHandler {
       'ArtikelNo': artikelNo,
       'Price': price,
       'KDV': kdv,
-      'Image': imagePath,
+      'Image': base64Image,
       'Description': description,
       'Status': status,
       'Location': location,
@@ -154,7 +158,8 @@ class ApiHandler {
         },
         body: json.encode(advertData),
       );
-
+ print('API Yanıt Kodu: ${response.statusCode}');
+  print('API Yanıtı: ${response.body}');
       return response.statusCode == 200;
     } catch (e) {
       print('Error: $e');
@@ -288,23 +293,43 @@ class ApiHandler {
 
   Future<List<Map<String, dynamic>>> getFavorites(String clientRef) async {
     final url = Uri.parse('$baseUri/favorites?clientRef=$clientRef');
-    final response = await http.get(url);
+    try {
+  final response = await client.get(url, headers: <String, String>{
+    'Content-Type': 'application/json; charset=UTF-8',
+  });
 
-    if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
-      return data.map((item) => item as Map<String, dynamic>).toList();
-    } else {
-      throw Exception('Failed to load favorites');
-    }
+  if (response.statusCode == 200) {
+    List<dynamic> data = json.decode(response.body);
+    return data.map((item) => item as Map<String, dynamic>).toList();
+  } else {
+    print('Status Code: ${response.statusCode}');
+    print('Response Body: ${response.body}');
+    print('ClientRef: $clientRef'); // clientRef değerini kontrol edin
+    
+
+    throw Exception('Failed to load favorites');
+  }
+} catch (e) {
+  print('Error occurred: $e');
+  throw Exception('Failed to load favorites');
+}
+
+
   }
 
   Future<bool> isAdvertFavorite(String advertRef, String clientRef) async {
     final uri = Uri.parse('$baseUri/Favorite/$clientRef/$advertRef');
+    print('Request URI: $uri'); // İstek URI'sini yazdır
+
     final response = await client.get(uri);
 
     if (response.statusCode == 200) {
+      print('API yanıtı: ${response.body}'); // API yanıtını yazdır
       return jsonDecode(response.body)['isFavorite'] ?? false;
     } else {
+      print('Hata durum kodu: ${response.statusCode}'); // Durum kodunu yazdır
+      print(
+          'Hata gövdesi: ${response.body}'); // Daha fazla bilgi için yanıt gövdesini yazdır
       throw Exception('Favoriler kontrol edilemedi.');
     }
   }
@@ -335,7 +360,8 @@ class ApiHandler {
 
   Future<List<dynamic>> fetchFavoritesByClientRef(String clientRef) async {
     try {
-      final response = await client.get(Uri.parse('$baseUri/favorites?clientRef=$clientRef'));
+      final response = await client
+          .get(Uri.parse('$baseUri/favorites?clientRef=$clientRef'));
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
@@ -344,6 +370,29 @@ class ApiHandler {
     } catch (e) {
       print("Favori ürünleri çekerken hata: $e");
       return [];
+    }
+  }
+
+  Future<void> removeFromFavorites(String advertRef, String clientRef) async {
+    final uri = Uri.parse('$baseUri/Favorite/$clientRef/$advertRef');
+    print('URI: $uri');
+
+    final response = await client.delete(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    print(
+        'Response Status Code: ${response.statusCode}'); // Yanıt durum kodunu kontrol et
+    print('Response Body: ${response.body}'); // Yanıt gövdesini kontrol et
+
+    if (response.statusCode == 200) {
+      print('Favorilerden çıkarıldı.');
+    } else {
+      throw Exception(
+          'Favorilerden çıkarılamadı: ${response.body}'); // Hata mesajını güncelle
     }
   }
 }

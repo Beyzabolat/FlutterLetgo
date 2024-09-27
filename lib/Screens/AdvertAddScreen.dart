@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_guid/flutter_guid.dart';
 import 'package:image_picker/image_picker.dart';
@@ -33,7 +34,10 @@ class _AdvertAddScreenState extends State<AdvertAddScreen> {
   final _locationController = TextEditingController();
   final _quantityController = TextEditingController();
 
-  XFile? _image;
+
+final ImagePicker _picker = ImagePicker();
+Uint8List? _imageBytes;
+XFile? _image;
   String? _selectedCategory;
 
   List<Map<String, dynamic>> _categories = []; 
@@ -104,7 +108,7 @@ Future<void> _loadCategories() async {
                       artikelNo: _artikelNoController.text,
                       price: double.tryParse(_priceController.text) ?? 0.0,
                       kdv: double.tryParse(_priceController.text) ?? 0.0,
-                      imagePath: _image?.path,
+                      imageBytes: _imageBytes,  // Uint8List'i gönderiyoruz
                       description: _descriptionController.text,
                       status: 1,
                       location: _locationController.text,
@@ -207,44 +211,47 @@ Future<void> _loadCategories() async {
     );
   }
 
-  Widget _buildImagePicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Fotoğraf',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-        SizedBox(height: 10),
-        GestureDetector(
-          onTap: () {
-            _pickImage();
-          },
-          child: Container(
-            width: double.infinity,
-            height: 200,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.red, width: 2),
-            ),
-            child: _image != null
-                ? Image.file(
-                    File(_image!.path),
-                    fit: BoxFit.cover,
-                  )
-                : Center(
-                    child: Icon(Icons.camera_alt, size: 50, color: Colors.grey),
-                  ),
+ Widget _buildImagePicker() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text('Fotoğraf',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+      SizedBox(height: 10),
+      GestureDetector(
+        onTap: () {
+          _pickImage();
+        },
+        child: Container(
+          width: double.infinity,
+          height: 200,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.red, width: 2),
           ),
+          child: _image != null
+              ? Image.file(
+                  File(_image!.path),
+                  fit: BoxFit.cover,
+                )
+              : Center(
+                  child: Icon(Icons.camera_alt, size: 50, color: Colors.grey),
+                ),
         ),
-      ],
-    );
-  }
-
-  Future<void> _pickImage() async {
-    final pickedImage =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+      ),
+    ],
+  );
+}
+ 
+Future<void> _pickImage() async {
+  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+  if (image != null) {
+    // Seçilen resmi byte dizisine dönüştür
+    _imageBytes = await image.readAsBytes();
     setState(() {
-      _image = pickedImage;
+      _image = image; // `_image` değişkenini güncelleyin
     });
   }
+}
 }

@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, sized_box_for_whitespace, use_key_in_widget_constructors, unused_import, file_names, prefer_const_constructors_in_immutables, library_private_types_in_public_api, avoid_print, prefer_interpolation_to_compose_strings, unused_element, prefer_final_fields, unused_field, use_build_context_synchronously, unused_label, unused_local_variable
 
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:http/http.dart' as http;
@@ -44,9 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _tabs.addAll([
       HomePage(clientRef: widget.clientRef),
-      FavoritesScreen(
-        clientRef: widget.clientRef,
-      ),
+      FavoritesScreen(clientRef: widget.clientRef),
       Messagescreen(clientRef: widget.clientRef),
       ProfileScreen(clientRef: widget.clientRef),
     ]);
@@ -173,7 +172,7 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: Homescreen(clientRef: 'Ref'),
+      body: Homescreen(clientRef: clientRef),
     );
   }
 }
@@ -194,50 +193,81 @@ class _HomePageBodyState extends State<Homescreen> {
   Set<String> favoriteAdvertRefs = {};
   bool isFavorite = false;
   final ApiHandler apiHandler = ApiHandler();
-    List<Map<String, String>> favoriteAds = [];
+  List<Map<String, dynamic>> favoriteAds = [];
+  List<dynamic> favoriteAdss = [];
 
-// Favorilere ekleme fonksiyonu
-Future<void> addToFavorites(String advertRef, String clientRef) async {
-  setState(() {
-    // Eğer zaten favorilerde yoksa, ekle
-    if (!favoriteAds.any((fav) => fav['AdvertRef'] == advertRef)) {
-      favoriteAds.add({
-        'AdvertRef': advertRef,
-        'ClientRef': clientRef,
-      });
-      print('Favorilere Eklendi: AdvertRef: $advertRef, ClientRef: $clientRef');
-    } else {
-      // Eğer zaten favorilerde varsa, kaldırmak isterseniz buraya ekleyebilirsiniz
-      favoriteAds.removeWhere((fav) => fav['AdvertRef'] == advertRef);
-      print('Favorilerden Çıkarıldı: AdvertRef: $advertRef');
-    }
-  });
-}
-  
+  Future<void> addToFavorites(String advertRef, String clientRef) async {
+    setState(() {
+      if (!favoriteAds.any((fav) => fav['AdvertRef'] == advertRef)) {
+        favoriteAds.add({
+          'AdvertRef': advertRef,
+          'ClientRef': clientRef,
+        });
+      } else {
+        favoriteAds.removeWhere((fav) => fav['AdvertRef'] == advertRef);
+        favoriteAds.remove({
+          'AdvertRef': advertRef,
+          'ClientRef': clientRef,
+        });
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _loadCategories();
     _loadAds();
+    loadFavorites(widget.clientRef);
     searchController.addListener(() {
       _filterAds();
     });
   }
 
-  Future<bool> _checkIfFavorite(String advertRef) async {
-    return favoriteAdvertRefs.contains(advertRef);
-  }
-
-  Future<void> _addToFavorites(String advertRef, String clientRef) async {
+  Future<void> _toggleFavorite(String advertRef, String clientRef) async {
     try {
-      await apiHandler.addToFavorites(advertRef, clientRef);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Favorilere eklendi.')),
-      );
+      bool isFavorite = favoriteAds.any((fav) => fav['AdvertRef'] == advertRef);
+
+      if (isFavorite) {
+        await apiHandler.removeFromFavorites(advertRef, clientRef);
+
+        setState(() {
+          favoriteAds.removeWhere((fav) => fav['AdvertRef'] == advertRef);
+        });
+        
+      } else {
+        await apiHandler.addToFavorites(advertRef, clientRef);
+
+        setState(() {
+          favoriteAds.add({'AdvertRef': advertRef, 'ClientRef': clientRef});
+        });
+        
+      }
+
+      await loadFavorites(clientRef);
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Favorilere eklenirken hata oluştu.')),
+        SnackBar(
+            content: Text(
+                'Favori işlemi sırasında bir hata oluştu: ${error.toString()}')), // Hata detayını göster
       );
+    }
+  }
+
+  Future<void> loadFavorites(String clientRef) async {
+    try {
+      List<Map<String, dynamic>> favorites =
+          await apiHandler.getFavorites(clientRef);
+
+      if (favorites.isNotEmpty) {
+      } else {
+        print('Favori yok veya yüklenemedi.');
+      }
+      setState(() {
+        favoriteAds = favorites;
+      });
+    } catch (e) {
+      print('Favoriler yüklenemedi: $e');
     }
   }
 
@@ -262,11 +292,8 @@ Future<void> addToFavorites(String advertRef, String clientRef) async {
         filteredAds = ads;
       });
     } catch (e) {
-      print('Filtered Ads: $filteredAds');
-
       print('Error loading ads: $e');
     }
-    print('Filtered Ads: $filteredAds');
   }
 
   void _filterAds() {
@@ -361,16 +388,10 @@ Future<void> addToFavorites(String advertRef, String clientRef) async {
                   itemCount: filteredAds.length,
                   itemBuilder: (context, index) {
                     final ad = filteredAds[index];
-                    print('Ad: $ad'); // Tüm ad nesnesini loglayın
-                   print('Selected Advert Ref: ${ad['Ref']}'); // Ref değerini loglayın
                     bool isFavorite = favoriteAdvertRefs.contains(ad['Ref']);
-                    print('Selected Adverttt Ref: ${ad['Ref']}'); // Ref değerini loglayın
                     return GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onTap: () {
-                        print('onTap çağrıldı');
-                        print('Seçilen İlan Ref: ${ad['Ref']}');
-
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -406,13 +427,21 @@ Future<void> addToFavorites(String advertRef, String clientRef) async {
                             top: 8,
                             right: 8,
                             child: IconButton(
-                              icon: Icon(  favoriteAds.any((fav) => fav['AdvertRef'] == ad['Ref']) ? Icons.favorite : Icons.favorite_border,
-    color: favoriteAds.any((fav) => fav['AdvertRef'] == ad['Ref']) ? Colors.red : Colors.grey,
+                              icon: Icon(
+                                favoriteAds.any(
+                                        (fav) => fav['AdvertRef'] == ad['Ref'])
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: favoriteAds.any(
+                                        (fav) => fav['AdvertRef'] == ad['Ref'])
+                                    ? Colors.red
+                                    : Colors.grey,
                               ),
                               onPressed: () async {
-                              String advertRef = ad['Ref'];
-    String clientRef = ad['ClientRef'];
-    _addToFavorites(advertRef, clientRef);
+                                String advertRef = ad['Ref'];
+                                String clientRef = ad['ClientRef'];
+                                await _toggleFavorite(advertRef, clientRef);
+                                await loadFavorites(clientRef);
                               },
                             ),
                           ),
@@ -429,6 +458,24 @@ Future<void> addToFavorites(String advertRef, String clientRef) async {
     );
   }
 
+  void _showImageDialog(String base64Image) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        Uint8List imageBytes =
+            base64Decode(base64Image); // Base64'ü decode ediyoruz
+        return Dialog(
+          child: imageBytes.isNotEmpty
+              ? Image.memory(
+                  imageBytes,
+                  fit: BoxFit.cover,
+                )
+              : Placeholder(fallbackHeight: 300, fallbackWidth: 300),
+        );
+      },
+    );
+  }
+
   Widget _buildProductCard(String title, String price, String location,
       String imageUrl, IconData icon, Color color, BuildContext context) {
     return Card(
@@ -438,21 +485,14 @@ Future<void> addToFavorites(String advertRef, String clientRef) async {
         children: [
           Expanded(
             child: imageUrl.isNotEmpty
-                ? Container(
-                    decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(15.0)),
-                      image: DecorationImage(
-                        image: NetworkImage(imageUrl),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                ? Image.memory(
+                    base64Decode(imageUrl),
+                    fit: BoxFit.cover,
+                    height: 100,
                   )
-                : Container(
-                    color: color,
-                    child: Center(
-                      child: Icon(icon, size: 50, color: Colors.white),
-                    ),
+                : Placeholder(
+                    fallbackHeight: 200,
+                    fallbackWidth: double.infinity,
                   ),
           ),
           Padding(
