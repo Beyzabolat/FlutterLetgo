@@ -1,9 +1,12 @@
-// ignore_for_file: file_names, use_key_in_widget_constructors, prefer_const_constructors, sort_child_properties_last, prefer_const_literals_to_create_immutables
+// ignore_for_file: file_names, use_key_in_widget_constructors, prefer_const_constructors, sort_child_properties_last, prefer_const_literals_to_create_immutables, use_super_parameters
+
 
 import 'package:flutter/material.dart';
 
 class Messagedetails extends StatefulWidget {
-  const Messagedetails({super.key});
+  final String clientRef; 
+
+  const Messagedetails({Key? key, required this.clientRef}) : super(key: key);
 
   @override
   State<Messagedetails> createState() => _MessagedetailsState();
@@ -13,11 +16,10 @@ class _MessagedetailsState extends State<Messagedetails> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<Map<String, String>> _messages = [
-    {"text": "Merhaba", "sender": "user"},
-    {"text": "merhaba", "sender": "other"},
-    {"text": "Abi en son kaça olur ?", "sender": "user"},
-    {"text": "Sen gel bakarız hallederiz bir şekilde..", "sender": "other"},
-    {"text": "tamam yarın geliyim ben o zaman", "sender": "user"},
+    /*{"text": "a", "sender": "user"},
+    {"text": "aa", "sender": "other"},
+    {"text": "a", "sender": "user"},
+    {"text": "a", "sender": "other"},*/
   ];
 
   void _sendMessage() {
@@ -50,12 +52,12 @@ class _MessagedetailsState extends State<Messagedetails> {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: AssetImage('assets/images/logo_01.png'), 
+              backgroundImage: AssetImage('assets/profile.png'),
               radius: 20,
             ),
             SizedBox(width: 10),
             Text(
-              'Kalfa Oto', 
+              'Kalfa Oto',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ],

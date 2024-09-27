@@ -2,6 +2,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_interpolation_to_compose_strings, library_private_types_in_public_api, use_key_in_widget_constructors, prefer_const_constructors_in_immutables, file_names, duplicate_ignore
 
 import 'package:flutter/material.dart';
+import 'package:project/Screens/Advertdetails.dart';
 
 class CategoryProductsScreen extends StatefulWidget {
   final String categoryName;
@@ -40,7 +41,6 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('${widget.categoryName} Ürünleri'),
       ),
@@ -57,13 +57,35 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
               itemCount: categoryAds.length,
               itemBuilder: (BuildContext context, int index) {
                 final ad = categoryAds[index];
-                return _buildProductCard(
-                  ad['Name'] ?? 'error',
-                  (ad['Price'] ?? 0).toString() + ' TL',
-                  ad['Image'] ?? '',
-                  Icons.shopping_bag,
-                  Colors.blueAccent,
-                  context,
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Advertdetails(
+                          title: ad['Name'] ?? 'Başlık Yok',
+                          description: ad['Description'] ?? 'Açıklama Yok',
+                          imageUrl: ad['Image'] ?? '',
+                          category: ad['Category'] ?? 'Kategori Yok',
+                          brand: ad['Brand'] ?? 'Marka Yok',
+                          model: ad['Model'] ?? 'Model Yok',
+                          price: ad['Price']?.toDouble() ?? 0.0,
+                          location: ad['Location'] ?? 'Konum Yok',
+                          quantity: ad['Quantity'] ?? 0,
+                          clientRef: widget.clientRef,
+                          advertRef: ad['Ref'] ?? '',
+                        ),
+                      ),
+                    );
+                  },
+                  child: _buildProductCard(
+                    ad['Name'] ?? 'error',
+                    (ad['Price'] ?? 0).toString() + ' TL',
+                    ad['Image'] ?? '',
+                    Icons.shopping_bag,
+                    Colors.blueAccent,
+                    context,
+                  ),
                 );
               },
             ),
