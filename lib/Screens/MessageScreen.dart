@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:project/apihandler.dart';
+import 'package:project/constants.dart';
 import 'messagedetails.dart';
 
 class Messagescreen extends StatefulWidget {
@@ -41,6 +42,7 @@ class _MessagescreenState extends State<Messagescreen> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
+        backgroundColor: kBackGroundColor,
         appBar: AppBar(
           title: Text(
             'Mesajlar',
@@ -48,10 +50,10 @@ class _MessagescreenState extends State<Messagescreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          automaticallyImplyLeading: false, 
-          elevation: 0, 
+          automaticallyImplyLeading: false,
+          elevation: 0,
           backgroundColor: Colors.transparent,
-          toolbarHeight: kToolbarHeight, 
+          toolbarHeight: kToolbarHeight,
           bottom: TabBar(
             onTap: (index) {
               setState(() {
@@ -74,7 +76,9 @@ class _MessagescreenState extends State<Messagescreen> {
                 return Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
                 return Center(child: Text('Hata: ${snapshot.error}'));
-              } else if (!snapshot.hasData || snapshot.data == null || snapshot.data!.isEmpty) {
+              } else if (!snapshot.hasData ||
+                  snapshot.data == null ||
+                  snapshot.data!.isEmpty) {
                 return Center(child: Text('Mesaj bulunamadı.'));
               }
 
@@ -96,7 +100,8 @@ class _MessagescreenState extends State<Messagescreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => Messagedetails(clientRef: widget.clientRef),
+                              builder: (context) =>
+                                  Messagedetails(clientRef: widget.clientRef),
                             ),
                           );
                         },
@@ -119,24 +124,28 @@ class _MessagescreenState extends State<Messagescreen> {
     );
   }
 
-  List<Map<String, dynamic>> _getFilteredMessages(List<Map<String, dynamic>> allMessages) {
+  List<Map<String, dynamic>> _getFilteredMessages(
+      List<Map<String, dynamic>> allMessages) {
     switch (_selectedTab) {
-      case 1: 
-        return allMessages.where((message) =>
-            (message['type'] == 'alis' && 
-             (message['SenderRef'] == widget.clientRef || message['AreaRef'] == widget.clientRef)))
+      case 1:
+        return allMessages
+            .where((message) => (message['type'] == 'alis' &&
+                (message['SenderRef'] == widget.clientRef ||
+                    message['AreaRef'] == widget.clientRef)))
             .toList();
-      case 2: 
-        return allMessages.where((message) =>
-            (message['type'] == 'satis' && 
-             (message['SenderRef'] == widget.clientRef || message['AreaRef'] == widget.clientRef)))
+      case 2:
+        return allMessages
+            .where((message) => (message['type'] == 'satis' &&
+                (message['SenderRef'] == widget.clientRef ||
+                    message['AreaRef'] == widget.clientRef)))
             .toList();
-      default: 
+      default:
         return allMessages;
     }
   }
 
-  Widget _buildMessageItem(BuildContext context, String title, String subtitle, IconData icon, Color color) {
+  Widget _buildMessageItem(BuildContext context, String title, String subtitle,
+      IconData icon, Color color) {
     return Card(
       elevation: 3,
       shape: RoundedRectangleBorder(

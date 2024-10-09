@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_string_interpolations, avoid_print, unused_import, depend_on_referenced_packages, non_constant_identifier_names, unused_local_variable
+// ignore_for_file: unnecessary_string_interpolations, avoid_print, unused_import, depend_on_referenced_packages, non_constant_identifier_names, unused_local_variable, unused_element
 
 import 'dart:convert';
 import 'dart:io';
@@ -8,7 +8,7 @@ import 'package:http/io_client.dart';
 import 'package:http/http.dart' as http;
 
 class ApiHandler {
-  final String baseUri = "https://192.168.1.145:7110/api/tables";
+  final String baseUri = "https://192.168.45.179:7110/api/tables";
 
   final http.Client client = IOClient(
     HttpClient()
@@ -112,6 +112,17 @@ class ApiHandler {
     }
   }
 
+  Future<List<dynamic>> fetchAdvertisementsByClientRef(String clientRef) async {
+    final response =
+        await http.get(Uri.parse('$baseUri/Advert?Ref=$clientRef'));
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('İlanlar yüklenemedi: ${response.statusCode}');
+    }
+  }
+
   Future<bool> addAdvert({
     required Guid? ref,
     required String code,
@@ -131,7 +142,7 @@ class ApiHandler {
   }) async {
     final uri = Uri.parse('$baseUri/Advert');
     // Base64 formatında resim verisi oluştur
-   String? base64Image = imageBytes != null ? base64Encode(imageBytes) : null;
+    String? base64Image = imageBytes != null ? base64Encode(imageBytes) : null;
     final advertData = {
       'Ref': ref?.toString(),
       'Code': code,
@@ -158,8 +169,8 @@ class ApiHandler {
         },
         body: json.encode(advertData),
       );
- print('API Yanıt Kodu: ${response.statusCode}');
-  print('API Yanıtı: ${response.body}');
+      print('API Yanıt Kodu: ${response.statusCode}');
+      print('API Yanıtı: ${response.body}');
       return response.statusCode == 200;
     } catch (e) {
       print('Error: $e');
@@ -294,27 +305,24 @@ class ApiHandler {
   Future<List<Map<String, dynamic>>> getFavorites(String clientRef) async {
     final url = Uri.parse('$baseUri/favorites?clientRef=$clientRef');
     try {
-  final response = await client.get(url, headers: <String, String>{
-    'Content-Type': 'application/json; charset=UTF-8',
-  });
+      final response = await client.get(url, headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      });
 
-  if (response.statusCode == 200) {
-    List<dynamic> data = json.decode(response.body);
-    return data.map((item) => item as Map<String, dynamic>).toList();
-  } else {
-    print('Status Code: ${response.statusCode}');
-    print('Response Body: ${response.body}');
-    print('ClientRef: $clientRef'); // clientRef değerini kontrol edin
-    
+      if (response.statusCode == 200) {
+        List<dynamic> data = json.decode(response.body);
+        return data.map((item) => item as Map<String, dynamic>).toList();
+      } else {
+        print('Status Code: ${response.statusCode}');
+        print('Response Body: ${response.body}');
+        print('ClientRef: $clientRef'); // clientRef değerini kontrol edin
 
-    throw Exception('Failed to load favorites');
-  }
-} catch (e) {
-  print('Error occurred: $e');
-  throw Exception('Failed to load favorites');
-}
-
-
+        throw Exception('Failed to load favorites');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+      throw Exception('Failed to load favorites');
+    }
   }
 
   Future<bool> isAdvertFavorite(String advertRef, String clientRef) async {
@@ -358,18 +366,83 @@ class ApiHandler {
     }
   }
 
-  Future<List<dynamic>> fetchFavoritesByClientRef(String clientRef) async {
+  Future<List<Map<String, dynamic>>> fetchFavoriteAdverts() async {
     try {
-      final response = await client
-          .get(Uri.parse('$baseUri/favorites?clientRef=$clientRef'));
+      final response = await client.get(Uri.parse('$baseUri/Favorites'));
+
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final List<dynamic> responseData = jsonDecode(response.body);
+
+        if (responseData.isNotEmpty) {
+          return responseData.cast<Map<String, dynamic>>();
+        } else {
+          throw Exception('Favori ilanlar bulunamadı');
+        }
       } else {
-        throw Exception('Favori ürünler alınamadı: ${response.statusCode}');
+        throw Exception('Favori ilanlar alınamadı: ${response.statusCode}');
       }
     } catch (e) {
-      print("Favori ürünleri çekerken hata: $e");
+      print("Favori ilanları çekerken hata: $e");
       return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchFavoritesByClientRef(
+      String clientRef) async {
+    final response =
+        await client.get(Uri.parse('$baseUri/favorites?clientRef=$clientRef'));
+    print('API yanıtı: ${response.body}');
+
+    if (response.statusCode == 200) {
+      List<dynamic> favorites = json.decode(response.body);
+      print('Favori İlanlar: $favorites');
+
+      List<Map<String, dynamic>> detailedFavorites = [];
+
+      for (var favorite in favorites) {
+        final advertRef = favorite['AdvertRef'];
+        print('İlan Ref: $advertRef');
+
+        final advertResponse =
+            await client.get(Uri.parse('$baseUri/Advert?Ref=$advertRef'));
+        print('İlan Detayı Yanıtı: ${advertResponse.body}');
+
+        if (advertResponse.statusCode == 200) {
+          List<dynamic> advertDetailsList = json.decode(advertResponse.body);
+          print(
+              'Detaylar Listesi: $advertDetailsList'); // Detaylar listesini yazdır
+
+          if (advertDetailsList.isNotEmpty) {
+            for (var advertDetails in advertDetailsList) {
+              print('Detaylar: $advertDetails'); // Her detayın içeriğini yazdır
+
+              // Burada 'Ref' alanını kontrol et
+              if (advertDetails.containsKey('Ref') &&
+                  advertDetails['Ref'] == advertRef) {
+                detailedFavorites.add({
+                  'Name': advertDetails['Name'],
+                  'Model': advertDetails['Model'],
+                  'Price': advertDetails['Price'],
+                  'Image': advertDetails['Image'],
+                  'Location': advertDetails['Location'],
+                });
+              } else {
+                print(
+                    'Hata: İlan referansı eşleşmiyor. İlan Ref: $advertRef, Detay Ref: ${advertDetails['Ref']}');
+              }
+            }
+          } else {
+            print('İlan detayları boş döndü. İlan Ref: $advertRef');
+          }
+        } else {
+          print(
+              'İlan Ref: $advertRef - Hata Kodu: ${advertResponse.statusCode}');
+        }
+      }
+
+      return detailedFavorites;
+    } else {
+      throw Exception('Favori ilanlar yüklenemedi: ${response.statusCode}');
     }
   }
 
@@ -395,4 +468,50 @@ class ApiHandler {
           'Favorilerden çıkarılamadı: ${response.body}'); // Hata mesajını güncelle
     }
   }
+
+ Future<bool> updateClientCardd(String clientRef, Map<String, dynamic> data) async {
+  try {
+    // URL'ye clientRef'i ekleyin
+    final response = await http.put(
+      Uri.parse('$baseUri/UpdateProfile?clientRef=$clientRef'), // clientRef'i URL parametresi olarak ekleyin
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(data), // JSON verisini kodlayarak gönderiyoruz
+    );
+
+    if (response.statusCode == 200) {
+      return true; // Güncelleme başarılı
+    } else {
+      print('Hata: ${response.statusCode} - ${response.body}'); // Hata mesajını yazdır
+      return false; // Güncelleme başarısız
+    }
+  } catch (e) {
+    print('Hata: $e'); // Hata mesajını yazdır
+    return false; // Güncelleme başarısız
+  }
+}
+
+Future<bool> updateClientCard(String clientRef, Map<String, dynamic> data) async {
+  try {
+    final response = await http.put(
+      Uri.parse('$baseUri/UpdateProfile'), 
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(data), // JSON verisini kodlayarak gönderiyoruz
+    );
+
+    if (response.statusCode == 200) {
+      return true; // Güncelleme başarılı
+    } else {
+      print('Hata: ${response.statusCode} - ${response.body}'); // Hata mesajını yazdır
+      return false; // Güncelleme başarısız
+    }
+  } catch (e) {
+    print('Hata: $e'); // Hata mesajını yazdır
+    return false; // Güncelleme başarısız
+  }
+}
+
 }

@@ -16,6 +16,7 @@ import 'package:project/Screens/MessageScreen.dart';
 import 'package:project/Screens/ProfileDetails.dart';
 import 'package:project/Screens/ProfileScreen.dart';
 import 'package:project/constants.dart';
+import 'package:iconsax/iconsax.dart';
 
 void main() => runApp(MyApp());
 
@@ -71,33 +72,30 @@ class _MyHomePageState extends State<MyHomePage> {
         items: [
           BottomNavigationBarItem(
             icon: _currentIndex == 0
-                ? Icon(Icons.home, color: Color.fromRGBO(255, 145, 77, 1))
-                : Icon(Icons.home_outlined,
-                    color: Color.fromRGBO(255, 145, 77, 1)),
+                ? Icon(Iconsax.home5, color: Color.fromRGBO(255, 145, 77, 1))
+                : Icon(Iconsax.home, color: Color.fromRGBO(255, 145, 77, 1)),
             label: 'Ana Sayfa',
             tooltip: 'Ana Sayfa',
           ),
           BottomNavigationBarItem(
             icon: _currentIndex == 1
-                ? Icon(Icons.favorite, color: Color.fromRGBO(255, 145, 77, 1))
-                : Icon(Icons.favorite_border,
-                    color: Color.fromRGBO(255, 145, 77, 1)),
+                ? Icon(Iconsax.heart5, color: Color.fromRGBO(255, 145, 77, 1))
+                : Icon(Iconsax.heart, color: Color.fromRGBO(255, 145, 77, 1)),
             label: 'Favoriler',
             tooltip: 'Favoriler',
           ),
           BottomNavigationBarItem(
             icon: _currentIndex == 2
-                ? Icon(Icons.chat_bubble,
-                    color: Color.fromRGBO(255, 145, 77, 1))
-                : Icon(Icons.chat_bubble_outline,
-                    color: Color.fromRGBO(255, 145, 77, 1)),
+                ? Icon(Iconsax.message5, color: Color.fromRGBO(255, 145, 77, 1))
+                : Icon(Iconsax.message, color: Color.fromRGBO(255, 145, 77, 1)),
             label: 'Mesajlar',
             tooltip: 'Mesajlar',
           ),
           BottomNavigationBarItem(
             icon: _currentIndex == 3
-                ? Icon(Icons.person, color: Color.fromRGBO(255, 145, 77, 1))
-                : Icon(Icons.person_outline,
+                ? Icon(Iconsax.profile_circle5,
+                    color: Color.fromRGBO(255, 145, 77, 1))
+                : Icon(Iconsax.profile_circle,
                     color: Color.fromRGBO(255, 145, 77, 1)),
             label: 'Profil',
             tooltip: 'Profil',
@@ -115,22 +113,26 @@ class _MyHomePageState extends State<MyHomePage> {
             )
           ],
         ),
-        child: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AdvertAddScreen(
-                  clientRef: widget.clientRef,
-                  categoryRef: 'Ref',
+        child: SizedBox(
+          width: 45,
+          height: 45,
+          child: FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AdvertAddScreen(
+                    clientRef: widget.clientRef,
+                    categoryRef: 'Ref',
+                  ),
                 ),
-              ),
-            );
-          },
-          elevation: 0,
-          backgroundColor: const Color.fromRGBO(255, 145, 77, 1),
-          foregroundColor: Colors.white,
-          child: const Icon(Icons.add),
+              );
+            },
+            elevation: 0,
+            backgroundColor: const Color.fromRGBO(255, 145, 77, 1),
+            foregroundColor: Colors.white,
+            child: const Icon(Iconsax.add),
+          ),
         ),
       ),
     );
@@ -234,14 +236,12 @@ class _HomePageBodyState extends State<Homescreen> {
         setState(() {
           favoriteAds.removeWhere((fav) => fav['AdvertRef'] == advertRef);
         });
-        
       } else {
         await apiHandler.addToFavorites(advertRef, clientRef);
 
         setState(() {
           favoriteAds.add({'AdvertRef': advertRef, 'ClientRef': clientRef});
         });
-        
       }
 
       await loadFavorites(clientRef);
@@ -249,7 +249,7 @@ class _HomePageBodyState extends State<Homescreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(
-                'Favori işlemi sırasında bir hata oluştu: ${error.toString()}')), // Hata detayını göster
+                'Favori işlemi sırasında bir hata oluştu: ${error.toString()}')),
       );
     }
   }
@@ -427,15 +427,22 @@ class _HomePageBodyState extends State<Homescreen> {
                             top: 8,
                             right: 8,
                             child: IconButton(
-                              icon: Icon(
-                                favoriteAds.any(
-                                        (fav) => fav['AdvertRef'] == ad['Ref'])
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                color: favoriteAds.any(
-                                        (fav) => fav['AdvertRef'] == ad['Ref'])
-                                    ? Colors.red
-                                    : Colors.grey,
+                              icon: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white,
+                                ),
+                                padding: EdgeInsets.all(4.0),
+                                child: Icon(
+                                  favoriteAds.any((fav) =>
+                                          fav['AdvertRef'] == ad['Ref'])
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: favoriteAds.any((fav) =>
+                                          fav['AdvertRef'] == ad['Ref'])
+                                      ? Colors.red
+                                      : Colors.grey,
+                                ),
                               ),
                               onPressed: () async {
                                 String advertRef = ad['Ref'];
@@ -462,8 +469,7 @@ class _HomePageBodyState extends State<Homescreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        Uint8List imageBytes =
-            base64Decode(base64Image); // Base64'ü decode ediyoruz
+        Uint8List imageBytes = base64Decode(base64Image);
         return Dialog(
           child: imageBytes.isNotEmpty
               ? Image.memory(
