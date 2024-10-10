@@ -66,20 +66,70 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile =
-        await picker.pickImage(source: ImageSource.camera);
 
+    // Kamera ya da galeri seçeneğini sunan bir diyalog gösterelim
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ListTile(
+              leading: Icon(Icons.camera_alt),
+              title: Text('Kameradan Çek'),
+              onTap: () async {
+                Navigator.pop(context); // Diyaloğu kapat
+                final XFile? pickedFile =
+                    await picker.pickImage(source: ImageSource.camera);
+                _processPickedFile(pickedFile);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.photo),
+              title: Text('Galeriden Seç'),
+              onTap: () async {
+                Navigator.pop(context); // Diyaloğu kapat
+                final XFile? pickedFile =
+                    await picker.pickImage(source: ImageSource.gallery);
+                _processPickedFile(pickedFile);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _processPickedFile(XFile? pickedFile) async {
     if (pickedFile != null) {
       final bytes = await pickedFile.readAsBytes();
       setState(() {
-        base64Image = base64Encode(bytes);
+        base64Image =
+            base64Encode(bytes); // Resmi base64 formatına dönüştür ve sakla
       });
 
-      _showImageDialog(base64Image);
+      _showImageDialog(base64Image); // Resmi göster
     }
   }
 
   void _showImageDialog(String base64Image) {
+    Uint8List imageBytes = base64Decode(base64Image);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: imageBytes.isNotEmpty
+              ? Image.memory(
+                  imageBytes,
+                  fit: BoxFit.cover,
+                )
+              : Placeholder(fallbackHeight: 300, fallbackWidth: 300),
+        );
+      },
+    );
+  }
+
+  void _showImageeDialog(String base64Image) {
     Uint8List imageBytes = base64Decode(base64Image);
     showDialog(
       context: context,
