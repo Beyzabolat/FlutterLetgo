@@ -56,7 +56,7 @@ class _AdvertListScreenState extends State<AdvertListScreen> {
                   final ad = ads[index];
                   return GestureDetector(
                     onTap: () {
-                      // - Farklı sayfa eklenecek..
+                      //  Farklı sayfa eklenecek
                     },
                     child: _buildAdvertCard(
                       context,

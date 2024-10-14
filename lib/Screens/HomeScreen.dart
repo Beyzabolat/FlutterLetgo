@@ -67,36 +67,38 @@ class _MyHomePageState extends State<MyHomePage> {
         showSelectedLabels: false,
         showUnselectedLabels: false,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Color.fromRGBO(255, 145, 77, 1),
-        unselectedItemColor: Color.fromRGBO(255, 145, 77, 1),
+        selectedItemColor: Color.fromRGBO(100, 10, 120, 147),
+        unselectedItemColor: Color.fromRGBO(100, 10, 120, 147),
         items: [
           BottomNavigationBarItem(
             icon: _currentIndex == 0
-                ? Icon(Iconsax.home5, color: Color.fromRGBO(255, 145, 77, 1))
-                : Icon(Iconsax.home, color: Color.fromRGBO(255, 145, 77, 1)),
+                ? Icon(Iconsax.home5, color: Color.fromRGBO(100, 10, 120, 147))
+                : Icon(Iconsax.home, color: Color.fromRGBO(100, 10, 120, 147)),
             label: 'Ana Sayfa',
             tooltip: 'Ana Sayfa',
           ),
           BottomNavigationBarItem(
             icon: _currentIndex == 1
-                ? Icon(Iconsax.heart5, color: Color.fromRGBO(255, 145, 77, 1))
-                : Icon(Iconsax.heart, color: Color.fromRGBO(255, 145, 77, 1)),
+                ? Icon(Iconsax.heart5, color: Color.fromRGBO(100, 10, 120, 147))
+                : Icon(Iconsax.heart, color: Color.fromRGBO(100, 10, 120, 147)),
             label: 'Favoriler',
             tooltip: 'Favoriler',
           ),
           BottomNavigationBarItem(
             icon: _currentIndex == 2
-                ? Icon(Iconsax.message5, color: Color.fromRGBO(255, 145, 77, 1))
-                : Icon(Iconsax.message, color: Color.fromRGBO(255, 145, 77, 1)),
+                ? Icon(Iconsax.message5,
+                    color: Color.fromRGBO(100, 10, 120, 147))
+                : Icon(Iconsax.message,
+                    color: Color.fromRGBO(100, 10, 120, 147)),
             label: 'Mesajlar',
             tooltip: 'Mesajlar',
           ),
           BottomNavigationBarItem(
             icon: _currentIndex == 3
                 ? Icon(Iconsax.profile_circle5,
-                    color: Color.fromRGBO(255, 145, 77, 1))
+                    color: Color.fromRGBO(100, 10, 120, 147))
                 : Icon(Iconsax.profile_circle,
-                    color: Color.fromRGBO(255, 145, 77, 1)),
+                    color: Color.fromRGBO(100, 10, 120, 147)),
             label: 'Profil',
             tooltip: 'Profil',
           ),
@@ -108,7 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.red.withOpacity(0.2),
+              color: Colors.purple.withOpacity(0.2),
               spreadRadius: 5,
             )
           ],
@@ -129,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
               );
             },
             elevation: 0,
-            backgroundColor: const Color.fromRGBO(255, 145, 77, 1),
+            backgroundColor: const Color.fromRGBO(100, 10, 120, 147),
             foregroundColor: Colors.white,
             child: const Icon(Iconsax.add),
           ),
@@ -332,8 +334,7 @@ class _HomePageBodyState extends State<Homescreen> {
                     final category = categories[index];
                     return _buildCategoryCard(
                       category['Name'] ?? 'Kategori',
-                      Icons.category,
-                      Color.fromRGBO(255, 145, 77, 1),
+                      _getCategoryIcon(category['Name']),
                       context,
                       category,
                     );
@@ -536,16 +537,66 @@ class _HomePageBodyState extends State<Homescreen> {
     );
   }
 
-  Widget _buildCategoryCard(String title, IconData icon, Color color,
-      BuildContext context, Map<String, dynamic> category) {
+  IconData _getCategoryIcon(String categoryName) {
+    switch (categoryName) {
+      case 'Direksiyon':
+        return Iconsax.driver;
+      case 'Oto Aksesuarları':
+        return Iconsax.cup;
+      case 'Klima ve Soğutma':
+        return Iconsax.airdrop;
+      case 'İç Donanım':
+        return Iconsax.cpu_setting;
+      case 'Lastikler':
+        return Iconsax.timer;
+      case 'Filtre Sistemleri':
+        return Iconsax.filter;
+      case 'Motor ve Yakıt':
+        return Iconsax.battery_3full;
+      case 'Elektrik ve Aydınlatma':
+        return Iconsax.flash;
+      case 'Fren ve Debriyaj':
+        return Iconsax.activity;
+      case 'Kaporta ve Dış Parçalar':
+        return Iconsax.buildings;
+      case 'Emniyet ve Güvenlik':
+        return Iconsax.shield_tick;
+      case 'Şanzıman Sistemleri':
+        return Iconsax.setting_2;
+      case 'Egzoz ve Emisyon':
+        return Iconsax.activity;
+      case 'Süspansiyon':
+        return Iconsax.fatrows;
+      default:
+        return Iconsax.category;
+    }
+  }
+
+  Widget _buildCategoryCard(String title, IconData icon, BuildContext context,
+      Map<String, dynamic> category) {
     return Container(
       height: double.maxFinite,
-      width: 100,
-      margin: EdgeInsets.only(right: 10),
-      padding: const EdgeInsets.all(4),
+      width: 120,
+      margin: EdgeInsets.only(right: 15),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Color.fromRGBO(255, 145, 77, 1),
+        gradient: LinearGradient(
+          colors: [
+            Color.fromARGB(147, 100, 10, 120), // İlk renk
+            Color(0xFFFE6D73), // İkinci renk
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            spreadRadius: 2,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
       ),
       child: GestureDetector(
         onTap: () {
@@ -564,14 +615,20 @@ class _HomePageBodyState extends State<Homescreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              'assets/screwdriver.png',
-              width: 50,
+            Icon(
+              icon,
+              size: 40,
+              color: Colors.white,
             ),
-            SizedBox(height: 4),
+            SizedBox(height: 10),
             Text(
               title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.white,
+              ),
             ),
           ],
         ),

@@ -24,7 +24,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     super.initState();
     favoritesFuture = ApiHandler().fetchFavoritesByClientRef(widget.clientRef);
     advertisementsFuture = _fetchAds();
-    print('Client Ref: ${widget.clientRef}'); // Client Ref'i yazdır
+    print('Client Ref: ${widget.clientRef}');  
   }
 
   final ApiHandler apiHandler = ApiHandler();
@@ -36,15 +36,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   Future<void> _removeFromFavorites(String advertRef, String clientRef) async {
     try {
-      // API üzerinden favorilerden çıkarma işlemi
       await apiHandler.removeFromFavorites(advertRef, clientRef);
 
-      // Favoriler listesinden çıkart
       setState(() {
         favoriteAds.removeWhere((fav) => fav['AdvertRef'] == advertRef);
       });
-
-      // Güncellenmiş favorileri yükle
       await loadFavorites(clientRef);
     } catch (error) {
       _showErrorSnackBar(error);
@@ -163,7 +159,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 itemBuilder: (context, index) {
                   final ad = ads[index];
                   String statusText =
-                      ad['Status'] == 1 ? 'Yeni' : 'Aktif'; // Durumu belirle
+                      ad['Status'] == 1 ? 'Yeni' : 'Aktif'; 
                   return _buildAdItem(context, ad);
                 },
               );
@@ -225,14 +221,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           ),
           Padding(
             padding: const EdgeInsets.only(
-                right: 8.0), // İkonu sağdan boşluk bırakıyoruz
+                right: 8.0),  
             child: IconButton(
               icon: Icon(
                 Icons.favorite,
-                color: Colors.red, // Varsayılan kırmızı
+                color: Colors.red,
               ),
               onPressed: () {
-                // Favorilerden çıkarma işlemi burada yapılabilir
                 print('Favorilerden çıkarıldı: $title');
               },
             ),
@@ -278,7 +273,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       decoration: BoxDecoration(
-        border: Border.all(width: 2, color: Colors.grey), // Geniş çizgi
+        border: Border.all(width: 2, color: Colors.grey),
         borderRadius: BorderRadius.circular(15.0),
       ),
       child: Column(
@@ -384,7 +379,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Yayınlanma tarihi ve daha fazla seçenek
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -442,7 +436,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               ),
               //SizedBox(height: 8), // Boşluğu azalt
               SizedBox(height: 10),
-              // Görsel ve ilan bilgileri
               Row(
                 children: [
                   ClipRRect(
@@ -510,7 +503,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 ],
               ),
               SizedBox(height: 10),
-              // Eylem butonları
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [

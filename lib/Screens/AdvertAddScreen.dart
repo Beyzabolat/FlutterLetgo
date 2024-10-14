@@ -108,7 +108,7 @@ Future<void> _loadCategories() async {
                       artikelNo: _artikelNoController.text,
                       price: double.tryParse(_priceController.text) ?? 0.0,
                       kdv: double.tryParse(_priceController.text) ?? 0.0,
-                      imageBytes: _imageBytes,  // Uint8List'i gönderiyoruz
+                      imageBytes: _imageBytes,   
                       description: _descriptionController.text,
                       status: 1,
                       location: _locationController.text,
@@ -247,10 +247,9 @@ Future<void> _loadCategories() async {
 Future<void> _pickImage() async {
   final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
   if (image != null) {
-    // Seçilen resmi byte dizisine dönüştür
     _imageBytes = await image.readAsBytes();
     setState(() {
-      _image = image; // `_image` değişkenini güncelleyin
+      _image = image;
     });
   }
 }

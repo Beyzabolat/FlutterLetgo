@@ -5,6 +5,7 @@ import 'package:project/Screens/AdvertListScreen.dart';
 import 'package:project/Screens/LoginScreen.dart';
 import 'package:project/Screens/ProfileDetails.dart';
 import 'package:project/Screens/ProfileEditScreen.dart';
+import 'package:project/Screens/Settings.dart';
 import 'package:project/apihandler.dart';
 import 'package:project/constants.dart';
 import 'dart:convert';
@@ -33,8 +34,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late Future<Map<String, dynamic>> _clientCardFuture;
   String clientName = 'Yükleniyor...';
   String clientPosition =
-      'Yükleniyor...'; // Diğer bilgiler için ekleyebilirsiniz.
+      'Yükleniyor...';
   String createdTime = ' ';
+  String? profileImageBase64;
   @override
   void initState() {
     super.initState();
@@ -55,8 +57,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         clientName = clientData['Name'] ?? 'İsim yok';
         clientPosition = clientData['Email'] ?? 'Pozisyon yok';
-
-        // Tarihi işlemeye çalışıyoruz
         String? rawDate = clientData['CreatedDateTime'];
         if (rawDate != null && rawDate.isNotEmpty) {
           try {
@@ -64,11 +64,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             createdTime = "${dateTime.day}.${dateTime.month}.${dateTime.year}";
           } catch (e) {
             print("Geçersiz tarih formatı: $e");
-            createdTime = 'Bilinmiyor'; // Format hatası durumunda
+            createdTime = 'Bilinmiyor'; 
           }
         } else {
-          createdTime = 'Bilinmiyor'; // Boş tarih durumu
+          createdTime = 'Bilinmiyor';
         }
+        profileImageBase64 = clientData['Image'];
       });
     } catch (e) {
       print('Hata: $e');
@@ -126,21 +127,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: ListView(
         padding: const EdgeInsets.all(10),
         children: [
-          // PROFİL BİLGİLERİ
           Column(
             children: [
               Stack(
-                alignment: Alignment.bottomRight, // Sağ alt köşeye hizala
+                alignment: Alignment.bottomRight,
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 50,
-                    backgroundImage: NetworkImage(
-                      "https://images.unsplash.com/photo-1554151228-14d9def656e4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=386&q=80",
-                    ),
+                    backgroundImage: profileImageBase64 != null
+                        ? MemoryImage(base64Decode(profileImageBase64!))
+                        : AssetImage('assets/images/profile.png'),
                   ),
                   GestureDetector(
                     onTap: () {
-                      // Profil düzenle sayfasına yönlendirme
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -153,11 +152,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       width: 30,
                       height: 30,
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        color: Color.fromRGBO(100, 10, 120, 30),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
-                        Icons.edit, // Kalem ikonu
+                        Icons.edit, 
                         color: Colors.white,
                         size: 18,
                       ),
@@ -173,16 +172,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(clientPosition), // Pozisyonu göster
+              Text(clientPosition), 
               const SizedBox(height: 5),
-              // Hesap oluşturulma tarihi
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.calendar_today, size: 16, color: Colors.grey),
                   const SizedBox(width: 5),
                   Text(
-                    'Hesap Oluşturulma Tarihi: $createdTime', // Tarihi gösteriyoruz
+                    'Hesap Oluşturulma Tarihi: $createdTime', 
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey,
@@ -207,7 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Text(
                 "(1/5)",
                 style: TextStyle(
-                  color: Colors.blue,
+                  color: Color.fromRGBO(100, 10, 120, 30),
                 ),
               )
             ],
@@ -221,14 +219,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   margin: EdgeInsets.only(right: index == 4 ? 0 : 6),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    color: index == 0 ? Colors.blue : Colors.black12,
+                    color: index == 0
+                        ? Color.fromRGBO(100, 10, 120, 147)
+                        : Colors.black12,
                   ),
                 ),
               );
             }),
           ),
           const SizedBox(height: 35),
-          // Custom ListTile Seçenekleri
           ...List.generate(
             customListTiles.length,
             (index) {
@@ -250,14 +249,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileOption(IconData icon, String title, BuildContext context,
-      {bool isLogout = false, required String clientRef}) {
+      {required String clientRef}) {
     return ListTile(
       leading: Icon(icon, size: 30, color: kTextFieldFill),
       title: Text(title, style: const TextStyle(fontSize: 18)),
       onTap: () {
-        if (isLogout) {
-          _logout(context);
-        } else if (title == 'Profil Bilgileri') {
+        if (title == 'Profil Bilgileri') {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -271,6 +268,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       clientRef: clientRef,
                     )),
           );
+        } else if (title == 'Ayarlar') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SettingsPage()),
+          );
+        } else if (title == 'Çıkış Yap') {
+          _logout(context); 
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('$title')),
@@ -279,17 +283,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
     );
   }
-
-  void _logout(BuildContext context) {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => Loginscreen()),
-      (Route<dynamic> route) => false,
-    );
-  }
 }
 
-// Custom ListTile verisi
 class CustomListTile {
   final IconData icon;
   final String title;
@@ -302,14 +297,16 @@ class CustomListTile {
   });
 }
 
-// Custom ListTile Kartlarının Listesi
 List<CustomListTile> customListTiles = [
   CustomListTile(
     icon: Icons.settings,
     title: "Ayarlar",
     onTap: (context) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Activity')),
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                SettingsPage()),
       );
     },
   ),
@@ -346,5 +343,16 @@ List<CustomListTile> customListTiles = [
   CustomListTile(
     title: "Çıkış Yap",
     icon: CupertinoIcons.arrow_right_arrow_left,
+    onTap: (context) {
+      _logout(context);
+    },
   ),
 ];
+
+void _logout(BuildContext context) {
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (context) => Loginscreen()),
+    (Route<dynamic> route) => false,
+  );
+}

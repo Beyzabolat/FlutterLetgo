@@ -1,11 +1,10 @@
-// ignore_for_file: use_super_parameters, file_names, library_private_types_in_public_api, prefer_const_constructors, use_build_context_synchronously, avoid_print
+// ignore_for_file: use_super_parameters, file_names, library_private_types_in_public_api, prefer_const_constructors, use_build_context_synchronously, avoid_print, unused_element
 
-import 'dart:convert'; // Import for base64Decode
-import 'dart:typed_data'; // Import for Uint8List
+import 'dart:convert'; 
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart'; // Import the image_picker package
+import 'package:image_picker/image_picker.dart'; 
 import 'package:project/Screens/HomeScreen.dart';
-import 'package:project/Screens/ProfileScreen.dart';
 import 'package:project/apihandler.dart';
 import 'package:project/constants.dart';
 
@@ -27,7 +26,9 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
   late TextEditingController phoneController;
   late TextEditingController addressController;
   late TextEditingController faxController;
-  String base64Image = ""; // To store the base64 string of the image
+  String base64Image = ""; 
+  bool isImageAvailable = false; 
+  String? temporaryBase64Image;
 
   @override
   void initState() {
@@ -48,26 +49,28 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
       'phone': phoneController.text,
       'address': addressController.text,
       'fax': faxController.text,
-      'image': base64Image
+      'image': temporaryBase64Image ??
+          base64Image 
     };
-    print('Updated Data: $updatedData');
-
+  
     final response =
         await ApiHandler().updateClientCard(widget.clientRef, updatedData);
     if (response) {
-      print('Update successful');
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
             builder: (context) => MyHomePage(clientRef: widget.clientRef)),
       );
+      setState(() {
+        _clientCardFuture = ApiHandler()
+            .fetchClientCard(widget.clientRef); 
+      });
     }
   }
 
-  Future<void> _pickImage() async {
+  void _pickImage() async {
     final ImagePicker picker = ImagePicker();
 
-    // Kamera ya da galeri seçeneğini sunan bir diyalog gösterelim
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -78,7 +81,7 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
               leading: Icon(Icons.camera_alt),
               title: Text('Kameradan Çek'),
               onTap: () async {
-                Navigator.pop(context); // Diyaloğu kapat
+                Navigator.pop(context);
                 final XFile? pickedFile =
                     await picker.pickImage(source: ImageSource.camera);
                 _processPickedFile(pickedFile);
@@ -88,7 +91,7 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
               leading: Icon(Icons.photo),
               title: Text('Galeriden Seç'),
               onTap: () async {
-                Navigator.pop(context); // Diyaloğu kapat
+                Navigator.pop(context); 
                 final XFile? pickedFile =
                     await picker.pickImage(source: ImageSource.gallery);
                 _processPickedFile(pickedFile);
@@ -100,36 +103,73 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
     );
   }
 
+  void _processPicCkedFile(XFile? pickedFile) async {
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      String newBase64Image =
+          base64Encode(bytes);
+
+      setState(() {
+        base64Image = newBase64Image; 
+        isImageAvailable = true; 
+      });
+
+      _showImageDialog(newBase64Image); 
+    }
+  }
+
+  void _processPickedFilee(XFile? pickedFile) async {
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      String newBase64Image =
+          base64Encode(bytes); 
+
+
+      setState(() {
+        base64Image = newBase64Image; 
+        isImageAvailable = true; 
+      });
+
+      
+      await updateClientCard();
+
+      _showImageDialog(newBase64Image);
+    }
+  }
+
+  void _processsPickedFile(XFile? pickedFile) async {
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      String newBase64Image =
+          base64Encode(bytes); 
+
+
+      setState(() {
+        base64Image = newBase64Image; 
+        isImageAvailable = true; 
+      });
+
+      _showImageDialog(newBase64Image);
+    }
+  }
+
   void _processPickedFile(XFile? pickedFile) async {
     if (pickedFile != null) {
       final bytes = await pickedFile.readAsBytes();
+      String newBase64Image =
+          base64Encode(bytes); 
+
+
       setState(() {
-        base64Image =
-            base64Encode(bytes); // Resmi base64 formatına dönüştür ve sakla
+        temporaryBase64Image = newBase64Image; 
+        isImageAvailable = true; 
       });
 
-      _showImageDialog(base64Image); // Resmi göster
+      _showImageDialog(newBase64Image); 
     }
   }
 
   void _showImageDialog(String base64Image) {
-    Uint8List imageBytes = base64Decode(base64Image);
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          child: imageBytes.isNotEmpty
-              ? Image.memory(
-                  imageBytes,
-                  fit: BoxFit.cover,
-                )
-              : Placeholder(fallbackHeight: 300, fallbackWidth: 300),
-        );
-      },
-    );
-  }
-
-  void _showImageeDialog(String base64Image) {
     Uint8List imageBytes = base64Decode(base64Image);
     showDialog(
       context: context,
@@ -154,7 +194,8 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
         backgroundColor: kBackGroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Color.fromRGBO(255, 145, 77, 1)),
+          icon:
+              Icon(Icons.arrow_back, color: Color.fromRGBO(100, 10, 120, 147)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -182,6 +223,20 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
             faxController.text = clientData['Fax'] ?? '';
           }
 
+          if (clientData['Image'] != null && clientData['Image'].isNotEmpty) {
+            try {
+              base64Image = clientData['Image'];
+              base64Decode(
+                  base64Image); 
+              isImageAvailable = true;
+            } catch (e) {
+              isImageAvailable = false; 
+            }
+          } else {
+            base64Image = ""; 
+            isImageAvailable = false;
+          }
+
           return Container(
             padding: EdgeInsets.only(left: 16, top: 25, right: 16),
             child: GestureDetector(
@@ -200,7 +255,7 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
                           decoration: BoxDecoration(
                             border: Border.all(
                               width: 4,
-                              color: Color.fromRGBO(255, 145, 77, 1),
+                              color: Color.fromRGBO(100, 10, 120, 147),
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -211,7 +266,7 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
                               )
                             ],
                             shape: BoxShape.circle,
-                            image: base64Image.isNotEmpty
+                            image: isImageAvailable
                                 ? DecorationImage(
                                     fit: BoxFit.cover,
                                     image:
@@ -219,9 +274,8 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
                                   )
                                 : DecorationImage(
                                     fit: BoxFit.cover,
-                                    image: NetworkImage(
-                                      "https://images.pexels.com/photos/3307758/pexels-photo-3307758.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=250",
-                                    ),
+                                    image:
+                                        AssetImage('assets/images/profile.png'),
                                   ),
                           ),
                         ),
@@ -230,13 +284,13 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
                           right: 0,
                           child: GestureDetector(
                             onTap:
-                                _pickImage, // Call the method to pick an image
+                                _pickImage,
                             child: Container(
                               height: 40,
                               width: 40,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Color.fromRGBO(255, 145, 77, 1),
+                                color: Color.fromRGBO(100, 10, 120, 30),
                               ),
                               child: Icon(
                                 Icons.camera_alt,
@@ -266,7 +320,8 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           side: BorderSide(
-                              color: Color.fromRGBO(255, 145, 77, 1), width: 2),
+                              color: Color.fromRGBO(100, 10, 120, 147),
+                              width: 2),
                         ),
                         onPressed: () {
                           Navigator.pop(context);
@@ -276,21 +331,21 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             letterSpacing: 1.2,
-                            color: Color.fromRGBO(255, 145, 77, 1),
+                            color: Color.fromRGBO(100, 10, 120, 147),
                           ),
                         ),
                       ),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color.fromRGBO(255, 145, 77, 1),
+                          backgroundColor: Color.fromRGBO(100, 10, 120, 147),
                           padding: EdgeInsets.symmetric(
                               horizontal: 40, vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
-                        onPressed: () async {
-                          await updateClientCard();
+                        onPressed: () {
+                          updateClientCard(); 
                         },
                         child: Text(
                           "Kaydet",
@@ -302,7 +357,7 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
                         ),
                       ),
                     ],
-                  ),
+                  )
                 ],
               ),
             ),
@@ -315,32 +370,14 @@ class _EditProfilePageState extends State<ProfileEditScreen> {
   Widget buildTextField(String labelText, TextEditingController controller,
       bool isPasswordTextField) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 35.0),
+      padding: const EdgeInsets.only(bottom: 25.0),
       child: TextField(
         controller: controller,
         obscureText: isPasswordTextField ? showPassword : false,
         decoration: InputDecoration(
-          suffixIcon: isPasswordTextField
-              ? IconButton(
-                  onPressed: () {
-                    setState(() {
-                      showPassword = !showPassword;
-                    });
-                  },
-                  icon: Icon(
-                    Icons.remove_red_eye,
-                    color: Colors.grey,
-                  ),
-                )
-              : null,
           contentPadding: EdgeInsets.only(bottom: 3),
           labelText: labelText,
           floatingLabelBehavior: FloatingLabelBehavior.always,
-          hintStyle: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
         ),
       ),
     );

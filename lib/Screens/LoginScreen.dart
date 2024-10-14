@@ -102,7 +102,7 @@ class _LoginScreenState extends State<Loginscreen> {
   onPressed: () {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => WelcomePage()), // WelcomeScreen yönlendirmesi
+      MaterialPageRoute(builder: (context) => WelcomePage()),
     );
   },
   icon: Image(

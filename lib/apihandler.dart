@@ -8,7 +8,7 @@ import 'package:http/io_client.dart';
 import 'package:http/http.dart' as http;
 
 class ApiHandler {
-  final String baseUri = "https://192.168.45.179:7110/api/tables";
+  final String baseUri = "https://192.168.63.179:7110/api/tables";
 
   final http.Client client = IOClient(
     HttpClient()
@@ -83,6 +83,7 @@ class ApiHandler {
 
       if (response.statusCode >= 200 && response.statusCode <= 299) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
+        //  print('API Yanıtı: ${response.body}');
         return jsonData;
       } else {
         throw Exception('Müşteri kartı alınırken bir hata oluştu.');
@@ -469,49 +470,54 @@ class ApiHandler {
     }
   }
 
- Future<bool> updateClientCardd(String clientRef, Map<String, dynamic> data) async {
-  try {
-    // URL'ye clientRef'i ekleyin
-    final response = await http.put(
-      Uri.parse('$baseUri/UpdateProfile?clientRef=$clientRef'), // clientRef'i URL parametresi olarak ekleyin
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(data), // JSON verisini kodlayarak gönderiyoruz
-    );
+  Future<bool> updateClientCardd(
+      String clientRef, Map<String, dynamic> data) async {
+    try {
+      // URL'ye clientRef'i ekleyin
+      final response = await http.put(
+        Uri.parse(
+            '$baseUri/UpdateProfile?clientRef=$clientRef'), // clientRef'i URL parametresi olarak ekleyin
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(data), // JSON verisini kodlayarak gönderiyoruz
+      );
 
-    if (response.statusCode == 200) {
-      return true; // Güncelleme başarılı
-    } else {
-      print('Hata: ${response.statusCode} - ${response.body}'); // Hata mesajını yazdır
+      if (response.statusCode == 200) {
+        return true; // Güncelleme başarılı
+      } else {
+        print(
+            'Hata: ${response.statusCode} - ${response.body}'); // Hata mesajını yazdır
+        return false; // Güncelleme başarısız
+      }
+    } catch (e) {
+      print('Hata: $e'); // Hata mesajını yazdır
       return false; // Güncelleme başarısız
     }
-  } catch (e) {
-    print('Hata: $e'); // Hata mesajını yazdır
-    return false; // Güncelleme başarısız
   }
-}
 
-Future<bool> updateClientCard(String clientRef, Map<String, dynamic> data) async {
-  try {
-    final response = await http.put(
-      Uri.parse('$baseUri/UpdateProfile'), 
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(data), // JSON verisini kodlayarak gönderiyoruz
-    );
+  Future<bool> updateClientCard(
+      String clientRef, Map<String, dynamic> data) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUri/UpdateProfile'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(data), // JSON verisini kodlayarak gönderiyoruz
+      );
 
-    if (response.statusCode == 200) {
-      return true; // Güncelleme başarılı
-    } else {
-      print('Hata: ${response.statusCode} - ${response.body}'); // Hata mesajını yazdır
+      if (response.statusCode == 200) {
+          print('Sunucu güncelleme başarılı');
+        return true; // Güncelleme başarılı
+      } else {
+        print(
+            'Hata: ${response.statusCode} - ${response.body}'); // Hata mesajını yazdır
+        return false; // Güncelleme başarısız
+      }
+    } catch (e) {
+      print('Hata: $e'); // Hata mesajını yazdır
       return false; // Güncelleme başarısız
     }
-  } catch (e) {
-    print('Hata: $e'); // Hata mesajını yazdır
-    return false; // Güncelleme başarısız
   }
-}
-
 }
