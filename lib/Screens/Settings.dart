@@ -1,4 +1,4 @@
-// ignore_for_file: file_names, prefer_const_literals_to_create_immutables, use_key_in_widget_constructors, library_private_types_in_public_api, prefer_const_constructors
+// ignore_for_file: file_names, prefer_const_literals_to_create_immutables, use_key_in_widget_constructors, library_private_types_in_public_api, prefer_const_constructors, avoid_print
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -76,8 +76,8 @@ class _SettingsPageState extends State<SettingsPage> {
             Divider(height: 15, thickness: 2),
             SizedBox(height: 10),
             buildNotificationOptionRow("Sizin İçin Yeni", 0),
-            buildNotificationOptionRow("Hesap Etkinliği", 1), 
-            buildNotificationOptionRow("Fırsatlar", 2), 
+            buildNotificationOptionRow("Hesap Etkinliği", 1),
+            buildNotificationOptionRow("Fırsatlar", 2),
             SizedBox(height: 50),
             Center(
               child: OutlinedButton(

@@ -8,7 +8,7 @@ import 'package:http/io_client.dart';
 import 'package:http/http.dart' as http;
 
 class ApiHandler {
-  final String baseUri = "https://192.168.63.179:7110/api/tables";
+  final String baseUri = "https://192.168.1.104:7110/api/tables";
 
   final http.Client client = IOClient(
     HttpClient()
@@ -93,7 +93,50 @@ class ApiHandler {
       return {};
     }
   }
+Future<bool> addAdvert({
+  required String categoryRef,
+  required String brand,
+  required String model,
+  required String name,
+  required String price,
+  required String description,
+  required String location,
+  required String clientRef,
+  String? imagePath,
+}) async {
+  final List<int>? imageBytes = imagePath != null
+      ? await File(imagePath).readAsBytes()
+      : null;
 
+  final response = await client.post(
+    Uri.parse('$baseUri/Advert'),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: jsonEncode({
+      'Ref': Guid.newGuid.toString(),
+      'Code': '0',
+      'CategoryRef': categoryRef,
+      'Brand': brand,
+      'Model': model,
+      'Name': name,
+      'ArtikelNo': '-',
+      'Price': price,
+      'Description': description,
+      'Location': location,
+      'ClientRef': clientRef,
+      'Image': imageBytes != null ? base64Encode(imageBytes) : null,
+      'Quantity': 1,
+      'Status': 1,
+      'CreatedDateTime': DateTime.now().toIso8601String(),
+    }),
+  );
+
+  print('Response status: ${response.statusCode}');
+  print('Response body: ${response.body}');
+
+  return response.statusCode == 201;
+}
   Future<List<Map<String, dynamic>>> fetchAds() async {
     final uri = Uri.parse('$baseUri/Advert');
     try {
@@ -124,7 +167,7 @@ class ApiHandler {
     }
   }
 
-  Future<bool> addAdvert({
+  Future<bool> addAdverrt({
     required Guid? ref,
     required String code,
     required String? categoryRef,
@@ -467,32 +510,6 @@ class ApiHandler {
     } else {
       throw Exception(
           'Favorilerden çıkarılamadı: ${response.body}'); // Hata mesajını güncelle
-    }
-  }
-
-  Future<bool> updateClientCardd(
-      String clientRef, Map<String, dynamic> data) async {
-    try {
-      // URL'ye clientRef'i ekleyin
-      final response = await http.put(
-        Uri.parse(
-            '$baseUri/UpdateProfile?clientRef=$clientRef'), // clientRef'i URL parametresi olarak ekleyin
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(data), // JSON verisini kodlayarak gönderiyoruz
-      );
-
-      if (response.statusCode == 200) {
-        return true; // Güncelleme başarılı
-      } else {
-        print(
-            'Hata: ${response.statusCode} - ${response.body}'); // Hata mesajını yazdır
-        return false; // Güncelleme başarısız
-      }
-    } catch (e) {
-      print('Hata: $e'); // Hata mesajını yazdır
-      return false; // Güncelleme başarısız
     }
   }
 

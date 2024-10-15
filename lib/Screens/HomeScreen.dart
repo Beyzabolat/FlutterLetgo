@@ -401,7 +401,8 @@ class _HomePageBodyState extends State<Homescreen> {
                               advertRef: ad['Ref'] ?? '',
                               title: ad['Name'] ?? 'Başlık',
                               description: ad['Description'] ?? 'Açıklama',
-                              imageUrl: ad['Image'] ?? '',
+                              imageUrl: ad['Images'] is String ? [ad['Images']] : ad['Images'] ?? [],
+
                               category: ad['Category'] ?? 'Kategori',
                               brand: ad['Brand'] ?? 'Marka',
                               model: ad['Model'] ?? 'Model',

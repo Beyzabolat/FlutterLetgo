@@ -65,7 +65,8 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                         builder: (context) => Advertdetails(
                           title: ad['Name'] ?? 'Başlık Yok',
                           description: ad['Description'] ?? 'Açıklama Yok',
-                          imageUrl: ad['Image'] ?? '',
+                         imageUrl: ad['Images'] ?? [],
+
                           category: ad['Category'] ?? 'Kategori Yok',
                           brand: ad['Brand'] ?? 'Marka Yok',
                           model: ad['Model'] ?? 'Model Yok',
