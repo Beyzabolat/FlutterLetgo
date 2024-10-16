@@ -1,8 +1,11 @@
 // ignore: file_names
 // ignore_for_file: prefer_const_constructors, prefer_interpolation_to_compose_strings, library_private_types_in_public_api, use_key_in_widget_constructors, prefer_const_constructors_in_immutables, file_names, duplicate_ignore
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:project/Screens/Advertdetails.dart';
+import 'package:project/constants.dart';
 
 class CategoryProductsScreen extends StatefulWidget {
   final String categoryName;
@@ -41,6 +44,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kBackGroundColor,
       appBar: AppBar(
         title: Text('${widget.categoryName} Ürünleri'),
       ),
@@ -65,8 +69,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                         builder: (context) => Advertdetails(
                           title: ad['Name'] ?? 'Başlık Yok',
                           description: ad['Description'] ?? 'Açıklama Yok',
-                         imageUrl: ad['Images'] ?? [],
-
+                          imageUrl: ad['Images'] ?? [],
                           category: ad['Category'] ?? 'Kategori Yok',
                           brand: ad['Brand'] ?? 'Marka Yok',
                           model: ad['Model'] ?? 'Model Yok',
@@ -82,6 +85,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                   child: _buildProductCard(
                     ad['Name'] ?? 'error',
                     (ad['Price'] ?? 0).toString() + ' TL',
+                    ad['Location'] ?? 'Konum Yok',
                     ad['Image'] ?? '',
                     Icons.shopping_bag,
                     Colors.blueAccent,
@@ -93,44 +97,52 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     );
   }
 
-  Widget _buildProductCard(String title, String description, String imageUrl,
-      IconData icon, Color color, BuildContext context) {
+  Widget _buildProductCard(String title, String price, String location,
+      String imageUrl, IconData icon, Color color, BuildContext context) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+      elevation: 3,
       child: Column(
         children: [
           Expanded(
             child: imageUrl.isNotEmpty
-                ? Container(
-                    decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(15.0)),
-                      image: DecorationImage(
-                        image: NetworkImage(imageUrl),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+                ? Image.memory(
+                    base64Decode(imageUrl),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
                   )
-                : Container(
-                    color: color,
-                    child: Center(
-                      child: Icon(icon, size: 50, color: Colors.white),
-                    ),
+                : Placeholder(
+                    fallbackHeight: 200,
+                    fallbackWidth: double.infinity,
                   ),
           ),
           Padding(
-            padding: EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 4),
                 Text(
-                  description,
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                  price,
+                  style: TextStyle(fontSize: 16, color: Colors.green),
+                ),
+                SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.location_on,
+                        size: 16, color: Colors.grey.shade700),
+                    SizedBox(width: 4),
+                    Text(
+                      'Konum: $location',
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                    ),
+                  ],
                 ),
               ],
             ),

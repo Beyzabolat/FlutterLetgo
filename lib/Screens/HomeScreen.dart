@@ -141,31 +141,94 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   final String clientRef;
+
   HomePage({required this.clientRef});
 
   @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool _isSearchEnabled =
+      false; // Arama alanının görünürlüğünü kontrol eden değişken
+  TextEditingController _searchController =
+      TextEditingController(); // Arama çubuğu kontrolcüsüList<Map<String, dynamic>> ads = []; // İlan verileri
+  List<Map<String, dynamic>> filteredAds = []; // Filtrelenmiş ilan verileri
+  List<Map<String, dynamic>> ads = []; // İlan verileri
+
+  void _seearchController() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      filteredAds = ads.where((ad) {
+        final name = (ad['Name'] ?? '').toLowerCase();
+        return name
+            .contains(query); // İlan adını arama sorgusuna göre filtreliyoruz
+      }).toList();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // İlk başta ads listesini doldurmayı unutmayın
+    filteredAds = ads; // Başlangıçta tüm ilanları gösteriyoruz
     final theme = Theme.of(context);
+
     return Scaffold(
       backgroundColor: const Color(0xff151617),
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: const Color(0xff151617),
         foregroundColor: Colors.white,
-        leading:
-            IconButton(onPressed: () {}, icon: const Icon(IconlyLight.search)),
-        title: ActionChip(
-          label: const Text("Konum Giriniz"),
-          shape: const StadiumBorder(),
-          backgroundColor: const Color(0xff272b30),
-          labelStyle: const TextStyle(color: Colors.white),
-          avatar: const Icon(IconlyLight.location, color: Colors.white),
-          side: const BorderSide(width: 0),
-          onPressed: () {},
+        leading: IconButton(
+          icon: const Icon(IconlyLight.search),
+          onPressed: () {
+            setState(() {
+              _isSearchEnabled = !_isSearchEnabled;
+              if (_isSearchEnabled) {
+                _searchController.clear(); // Arama çubuğu açıldığında temizle
+                filteredAds = ads; // Tüm ilanları göster
+              } // Arama alanının görünürlüğünü değiştirir
+            });
+          },
         ),
+        // Eğer arama yapılıyorsa, TextField göster; yoksa normal ActionChip göster.
+        title: _isSearchEnabled
+            ? TextField(
+                controller: _searchController,
+                onChanged: (text) {
+                  _seearchController(); // Her değişimde arama fonksiyonunu çağır
+                },
+                autofocus: true,
+                cursorColor: Colors.white,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Arama yap...',
+                  hintStyle: const TextStyle(color: Colors.white54),
+                  border: InputBorder.none,
+                ),
+              )
+            : ActionChip(
+                label: const Text("Konum Giriniz"),
+                shape: const StadiumBorder(),
+                backgroundColor: const Color(0xff272b30),
+                labelStyle: const TextStyle(color: Colors.white),
+                avatar: const Icon(IconlyLight.location, color: Colors.white),
+                side: const BorderSide(width: 0),
+                onPressed: () {},
+              ),
         actions: [
+          if (_isSearchEnabled) // Eğer arama açık ise kapatma butonu gösteriyoruz
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () {
+                setState(() {
+                  _isSearchEnabled = false; // Arama alanını kapat
+                  _searchController.clear(); // Arama çubuğunu temizle
+                });
+              },
+            ),
           IconButton(
             onPressed: () {},
             icon: Badge(
@@ -176,7 +239,9 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: Homescreen(clientRef: clientRef),
+      body: Homescreen(
+          clientRef: widget
+              .clientRef), // widget.clientRef kullanıyoruz çünkü StatefulWidget
     );
   }
 }
@@ -198,7 +263,6 @@ class _HomePageBodyState extends State<Homescreen> {
   bool isFavorite = false;
   final ApiHandler apiHandler = ApiHandler();
   List<Map<String, dynamic>> favoriteAds = [];
-  List<dynamic> favoriteAdss = [];
 
   Future<void> addToFavorites(String advertRef, String clientRef) async {
     setState(() {
@@ -223,8 +287,9 @@ class _HomePageBodyState extends State<Homescreen> {
     _loadCategories();
     _loadAds();
     loadFavorites(widget.clientRef);
+    filteredAds = ads;
     searchController.addListener(() {
-      _filterAds();
+      // _searchController();
     });
   }
 
@@ -296,16 +361,6 @@ class _HomePageBodyState extends State<Homescreen> {
     } catch (e) {
       print('Error loading ads: $e');
     }
-  }
-
-  void _filterAds() {
-    final query = searchController.text.toLowerCase();
-    setState(() {
-      filteredAds = ads.where((ad) {
-        final name = (ad['Name'] ?? '').toLowerCase();
-        return name.contains(query);
-      }).toList();
-    });
   }
 
   @override
@@ -401,14 +456,16 @@ class _HomePageBodyState extends State<Homescreen> {
                               advertRef: ad['Ref'] ?? '',
                               title: ad['Name'] ?? 'Başlık',
                               description: ad['Description'] ?? 'Açıklama',
-                              imageUrl: ad['Images'] is String ? [ad['Images']] : ad['Images'] ?? [],
-
+                              imageUrl: ad['Images'] is String
+                                  ? [ad['Images']]
+                                  : ad['Images'] ?? [],
                               category: ad['Category'] ?? 'Kategori',
                               brand: ad['Brand'] ?? 'Marka',
                               model: ad['Model'] ?? 'Model',
                               price: ad['Price']?.toDouble() ?? 0.0,
                               location: ad['Location'] ?? 'Konum',
                               quantity: ad['Quantity'] ?? 0,
+                              //  categoryRef: ad['CategoryRef'] ?? '',
                             ),
                           ),
                         );
@@ -477,6 +534,8 @@ class _HomePageBodyState extends State<Homescreen> {
               ? Image.memory(
                   imageBytes,
                   fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
                 )
               : Placeholder(fallbackHeight: 300, fallbackWidth: 300),
         );
@@ -496,7 +555,9 @@ class _HomePageBodyState extends State<Homescreen> {
                 ? Image.memory(
                     base64Decode(imageUrl),
                     fit: BoxFit.cover,
-                    height: 100,
+                    width: double.infinity,
+                    height: double.infinity,
+                    // height: 100,
                   )
                 : Placeholder(
                     fallbackHeight: 200,
