@@ -45,7 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _tabs.addAll([
-      HomePage(clientRef: widget.clientRef),
+      Homescreen(clientRef: widget.clientRef),
       FavoritesScreen(clientRef: widget.clientRef),
       Messagescreen(clientRef: widget.clientRef),
       ProfileScreen(clientRef: widget.clientRef),
@@ -141,110 +141,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class HomePage extends StatefulWidget {
-  final String clientRef;
 
-  HomePage({required this.clientRef});
 
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  bool _isSearchEnabled =
-      false; // Arama alanının görünürlüğünü kontrol eden değişken
-  TextEditingController _searchController =
-      TextEditingController(); // Arama çubuğu kontrolcüsüList<Map<String, dynamic>> ads = []; // İlan verileri
-  List<Map<String, dynamic>> filteredAds = []; // Filtrelenmiş ilan verileri
-  List<Map<String, dynamic>> ads = []; // İlan verileri
-
-  void _seearchController() {
-    final query = _searchController.text.toLowerCase();
-    setState(() {
-      filteredAds = ads.where((ad) {
-        final name = (ad['Name'] ?? '').toLowerCase();
-        return name
-            .contains(query); // İlan adını arama sorgusuna göre filtreliyoruz
-      }).toList();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // İlk başta ads listesini doldurmayı unutmayın
-    filteredAds = ads; // Başlangıçta tüm ilanları gösteriyoruz
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      backgroundColor: const Color(0xff151617),
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: const Color(0xff151617),
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(IconlyLight.search),
-          onPressed: () {
-            setState(() {
-              _isSearchEnabled = !_isSearchEnabled;
-              if (_isSearchEnabled) {
-                _searchController.clear(); // Arama çubuğu açıldığında temizle
-                filteredAds = ads; // Tüm ilanları göster
-              } // Arama alanının görünürlüğünü değiştirir
-            });
-          },
-        ),
-        // Eğer arama yapılıyorsa, TextField göster; yoksa normal ActionChip göster.
-        title: _isSearchEnabled
-            ? TextField(
-                controller: _searchController,
-                onChanged: (text) {
-                  _seearchController(); // Her değişimde arama fonksiyonunu çağır
-                },
-                autofocus: true,
-                cursorColor: Colors.white,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Arama yap...',
-                  hintStyle: const TextStyle(color: Colors.white54),
-                  border: InputBorder.none,
-                ),
-              )
-            : ActionChip(
-                label: const Text("Konum Giriniz"),
-                shape: const StadiumBorder(),
-                backgroundColor: const Color(0xff272b30),
-                labelStyle: const TextStyle(color: Colors.white),
-                avatar: const Icon(IconlyLight.location, color: Colors.white),
-                side: const BorderSide(width: 0),
-                onPressed: () {},
-              ),
-        actions: [
-          if (_isSearchEnabled) // Eğer arama açık ise kapatma butonu gösteriyoruz
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () {
-                setState(() {
-                  _isSearchEnabled = false; // Arama alanını kapat
-                  _searchController.clear(); // Arama çubuğunu temizle
-                });
-              },
-            ),
-          IconButton(
-            onPressed: () {},
-            icon: Badge(
-              backgroundColor: theme.colorScheme.primary,
-              alignment: const Alignment(1, -1.5),
-              child: const Icon(IconlyLight.notification),
-            ),
-          ),
-        ],
-      ),
-      body: Homescreen(
-          clientRef: widget
-              .clientRef), // widget.clientRef kullanıyoruz çünkü StatefulWidget
-    );
-  }
-}
 
 class Homescreen extends StatefulWidget {
   final String clientRef;
@@ -289,7 +187,7 @@ class _HomePageBodyState extends State<Homescreen> {
     loadFavorites(widget.clientRef);
     filteredAds = ads;
     searchController.addListener(() {
-      // _searchController();
+      _searchController();
     });
   }
 
@@ -363,165 +261,250 @@ class _HomePageBodyState extends State<Homescreen> {
     }
   }
 
+  void _searchController() {
+    final query = searchController.text.toLowerCase().trim();
+    setState(() {
+      filteredAds = ads.where((ad) {
+        final name = (ad['Name'] ?? '').toLowerCase();
+        return name.isNotEmpty &&
+            name.contains(query); // Arama koşulunu kontrol et
+      }).toList();
+      print(
+          'Bulunan ilan sayısı: ${filteredAds.length}'); // Filtreleme sonuçlarını kontrol edin
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return ListView(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text(
-                  "Kategoriler",
-                  style: theme.textTheme.headlineMedium
-                      ?.copyWith(color: Colors.white),
-                ),
-              ),
-              SizedBox(
-                height: 100,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    return _buildCategoryCard(
-                      category['Name'] ?? 'Kategori',
-                      _getCategoryIcon(category['Name']),
-                      context,
-                      category,
-                    );
+    final adsToShow = _isSearchEnabled
+        ? filteredAds
+        : ads; // Arama yapılıp yapılmadığına göre liste
+
+    return Scaffold(
+        backgroundColor: const Color(0xff151617),
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: const Color(0xff151617),
+          foregroundColor: Colors.white,
+          leading: IconButton(
+            icon: const Icon(IconlyLight.search),
+            onPressed: () {
+              setState(() {
+                _isSearchEnabled = !_isSearchEnabled;
+                if (_isSearchEnabled) {
+                  searchController.clear(); // Arama çubuğu açıldığında temizle
+                  filteredAds = ads; // Tüm ilanları göster
+                }
+              });
+            },
+          ),
+          title: _isSearchEnabled
+              ? TextField(
+                  controller: searchController,
+                  onChanged: (text) {
+                    _searchController(); // Her değişimde arama fonksiyonunu çağır
+                    print(
+                        'Aranan terim: $text'); // Dinleyicinin çalışıp çalışmadığını kontrol edin
                   },
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: 15),
-                  itemCount: categories.length,
-                ),
-              )
-            ],
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.only(top: 10),
-          constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height * 0.7),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "İlanlar",
-                      style: theme.textTheme.titleLarge
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    TextButton.icon(
-                      onPressed: () {},
-                      icon: const Text("Tümünü Gör"),
-                      label: const Icon(IconlyLight.arrowRight2, size: 20),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 2 / 3,
+                  autofocus: true,
+                  cursorColor: Colors.white,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Arama yap...',
+                    hintStyle: const TextStyle(color: Colors.white54),
+                    border: InputBorder.none,
                   ),
-                  itemCount: filteredAds.length,
-                  itemBuilder: (context, index) {
-                    final ad = filteredAds[index];
-                    bool isFavorite = favoriteAdvertRefs.contains(ad['Ref']);
-                    return GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onTap: () {
-                        Navigator.push(
+                )
+              : ActionChip(
+                  label: const Text("Konum Giriniz"),
+                  shape: const StadiumBorder(),
+                  backgroundColor: const Color(0xff272b30),
+                  labelStyle: const TextStyle(color: Colors.white),
+                  avatar: const Icon(IconlyLight.location, color: Colors.white),
+                  side: const BorderSide(width: 0),
+                  onPressed: () {},
+                ),
+          actions: [
+            if (_isSearchEnabled) // Eğer arama açık ise kapatma butonu gösteriyoruz
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  setState(() {
+                    _isSearchEnabled = false; // Arama alanını kapat
+                    searchController.clear(); // Arama çubuğunu temizle
+                  });
+                },
+              ),
+            IconButton(
+              onPressed: () {},
+              icon: Badge(
+                backgroundColor: theme.colorScheme.primary,
+                alignment: const Alignment(1, -1.5),
+                child: const Icon(IconlyLight.notification),
+              ),
+            ),
+          ],
+        ),
+        body: ListView(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      "Kategoriler",
+                      style: theme.textTheme.headlineMedium
+                          ?.copyWith(color: Colors.white),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 100,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        return _buildCategoryCard(
+                          category['Name'] ?? 'Kategori',
+                          _getCategoryIcon(category['Name']),
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => Advertdetails(
-                              clientRef: widget.clientRef,
-                              advertRef: ad['Ref'] ?? '',
-                              title: ad['Name'] ?? 'Başlık',
-                              description: ad['Description'] ?? 'Açıklama',
-                              imageUrl: ad['Images'] is String
-                                  ? [ad['Images']]
-                                  : ad['Images'] ?? [],
-                              category: ad['Category'] ?? 'Kategori',
-                              brand: ad['Brand'] ?? 'Marka',
-                              model: ad['Model'] ?? 'Model',
-                              price: ad['Price']?.toDouble() ?? 0.0,
-                              location: ad['Location'] ?? 'Konum',
-                              quantity: ad['Quantity'] ?? 0,
-                              //  categoryRef: ad['CategoryRef'] ?? '',
-                            ),
+                          category,
+                        );
+                      },
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 15),
+                      itemCount: categories.length,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.only(top: 10),
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height * 0.7,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "İlanlar",
+                          style: theme.textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        TextButton.icon(
+                          onPressed: () {}, // Tümünü gör butonuna işlev ekleyin
+                          icon: const Text("Tümünü Gör"),
+                          label: const Icon(IconlyLight.arrowRight2, size: 20),
+                        )
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    child: GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 2 / 3,
+                      ),
+                      itemCount: adsToShow
+                          .length, // Arama sonucu veya tüm ilanları göster
+                      itemBuilder: (context, index) {
+                        final ad = adsToShow[index];
+                        bool isFavorite =
+                            favoriteAdvertRefs.contains(ad['Ref']);
+                        return GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Advertdetails(
+                                  clientRef: widget.clientRef,
+                                  advertRef: ad['Ref'] ?? '',
+                                  title: ad['Name'] ?? 'Başlık',
+                                  description: ad['Description'] ?? 'Açıklama',
+                                  imageUrl: ad['Images'] is String
+                                      ? [ad['Images']]
+                                      : ad['Images'] ?? [],
+                                  category: ad['Category'] ?? 'Kategori',
+                                  brand: ad['Brand'] ?? 'Marka',
+                                  model: ad['Model'] ?? 'Model',
+                                  price: ad['Price']?.toDouble() ?? 0.0,
+                                  location: ad['Location'] ?? 'Konum',
+                                  quantity: ad['Quantity'] ?? 0,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Stack(
+                            alignment: Alignment.topRight,
+                            children: [
+                              _buildProductCard(
+                                ad['Name'] ?? 'Hata: Başlık Yok',
+                                (ad['Price']?.toString() ?? '0') + ' TL',
+                                ad['Location'] ?? 'Konum',
+                                ad['Image'] ?? 'assets/screwdriver.png',
+                                Icons.shopping_cart,
+                                Colors.grey.shade100,
+                                context,
+                              ),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: IconButton(
+                                  icon: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                    ),
+                                    padding: EdgeInsets.all(4.0),
+                                    child: Icon(
+                                      favoriteAds.any((fav) =>
+                                              fav['AdvertRef'] == ad['Ref'])
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: favoriteAds.any((fav) =>
+                                              fav['AdvertRef'] == ad['Ref'])
+                                          ? Colors.red
+                                          : Colors.grey,
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    String advertRef = ad['Ref'];
+                                    String clientRef = ad['ClientRef'];
+                                    await _toggleFavorite(advertRef, clientRef);
+                                    await loadFavorites(clientRef);
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         );
                       },
-                      child: Stack(
-                        alignment: Alignment.topRight,
-                        children: [
-                          _buildProductCard(
-                            ad['Name'] ?? 'Hata: Başlık Yok',
-                            (ad['Price']?.toString() ?? '0') + ' TL',
-                            ad['Location'] ?? 'Konum',
-                            ad['Image'] ?? 'assets/screwdriver.png',
-                            Icons.shopping_cart,
-                            Colors.grey.shade100,
-                            context,
-                          ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: IconButton(
-                              icon: Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white,
-                                ),
-                                padding: EdgeInsets.all(4.0),
-                                child: Icon(
-                                  favoriteAds.any((fav) =>
-                                          fav['AdvertRef'] == ad['Ref'])
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  color: favoriteAds.any((fav) =>
-                                          fav['AdvertRef'] == ad['Ref'])
-                                      ? Colors.red
-                                      : Colors.grey,
-                                ),
-                              ),
-                              onPressed: () async {
-                                String advertRef = ad['Ref'];
-                                String clientRef = ad['ClientRef'];
-                                await _toggleFavorite(advertRef, clientRef);
-                                await loadFavorites(clientRef);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              )
-            ],
-          ),
-        )
-      ],
-    );
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ));
   }
 
   void _showImageDialog(String base64Image) {
