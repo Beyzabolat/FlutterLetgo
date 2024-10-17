@@ -162,24 +162,25 @@ class _AdvertdetailsState extends State<Advertdetails> {
       ),
     );
   }
-Future<void> _loadCategories() async {
-  final apiHandler = ApiHandler();
-  final categories = await apiHandler.fetchCategories();
 
-  print(
-      "Yüklenen Kategoriler: ${categories.map((cat) => cat['Ref']).toList()}");
+  Future<void> _loadCategories() async {
+    final apiHandler = ApiHandler();
+    final categories = await apiHandler.fetchCategories();
 
-  // Widget hala ağacın bir parçasıysa setState() çağır
-  if (mounted) {
-    setState(() {
-      _categories = categories;
-      if (_categories.isNotEmpty) {
-        _selectedCategory = _categories.first['Ref'];
-        print("Başlangıç Seçili Kategori: $_selectedCategory");
-      }
-    });
+    print(
+        "Yüklenen Kategoriler: ${categories.map((cat) => cat['Ref']).toList()}");
+
+    // Widget hala ağacın bir parçasıysa setState() çağır
+    if (mounted) {
+      setState(() {
+        _categories = categories;
+        if (_categories.isNotEmpty) {
+          _selectedCategory = _categories.first['Ref'];
+          print("Başlangıç Seçili Kategori: $_selectedCategory");
+        }
+      });
+    }
   }
-}
 
 // Kategori ismini almak için yardımcı fonksiyon
   String _getCategoryName(String categoryRef) {
@@ -209,7 +210,7 @@ Future<void> _loadCategories() async {
     try {
       final response = await http.get(
         Uri.parse(
-            'https://192.168.1.104:7110/api/Tables/Advert?Ref=${widget.advertRef}'),
+            'https://192.168.1.106:7110/api/Tables/Advert?Ref=${widget.advertRef}'),
       );
       if (response.statusCode == 200) {
         print("API Yanıtı: ${response.body}");

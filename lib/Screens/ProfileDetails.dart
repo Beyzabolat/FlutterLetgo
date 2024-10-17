@@ -2,34 +2,52 @@
 
 import 'package:flutter/material.dart';
 import 'package:project/apihandler.dart';
+import 'package:project/constants.dart';
+import 'dart:convert'; // Base64 decode için
 
 class Profiledetails extends StatefulWidget {
   final String clientRef;
 
   const Profiledetails({required this.clientRef});
-  
+
   @override
   State<Profiledetails> createState() => _ProfiledetailsState();
 }
 
 class _ProfiledetailsState extends State<Profiledetails> {
   late Future<Map<String, dynamic>> _clientCardFuture;
+  String? profileImageBase64;
 
   @override
   void initState() {
     super.initState();
-    print('ClientRef: ${widget.clientRef}');
     _clientCardFuture = ApiHandler().fetchClientCard(widget.clientRef);
+    _fetchClientData();
+  }
+
+  Future<void> _fetchClientData() async {
+    try {
+      final clientData = await _clientCardFuture;
+      setState(() {
+        profileImageBase64 = clientData['Image']; // Base64 görüntüyü al
+      });
+    } catch (e) {
+      print('Hata: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kBackGroundColor,
       appBar: AppBar(
-        title: Text('Profil', style: TextStyle(fontSize: 20)),
-        backgroundColor: Colors.red,
-        elevation: 0,
-      ),
+          title: Text(
+            'Profil',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          backgroundColor: kBackGroundColor),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: FutureBuilder<Map<String, dynamic>>(
@@ -42,7 +60,6 @@ class _ProfiledetailsState extends State<Profiledetails> {
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return Center(child: Text('Müşteri bilgileri bulunamadı.'));
             }
-
             final clientData = snapshot.data!;
             final Name = clientData['Name'] ?? 'İsim yok';
             final userName = clientData['UserName'] ?? 'Kullanıcı Adı';
@@ -61,7 +78,9 @@ class _ProfiledetailsState extends State<Profiledetails> {
                   Center(
                     child: CircleAvatar(
                       radius: 60,
-                      backgroundImage: AssetImage('assets/profile.png'),
+                      backgroundImage: profileImageBase64 != null
+                          ? MemoryImage(base64Decode(profileImageBase64!))
+                          : AssetImage('assets/profile.png') as ImageProvider,
                       backgroundColor: Colors.grey[200],
                     ),
                   ),
@@ -69,10 +88,9 @@ class _ProfiledetailsState extends State<Profiledetails> {
                   Text(
                     userName,
                     style: TextStyle(
-                      fontSize: 28, 
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87
-                    ),
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87),
                   ),
                   SizedBox(height: 10),
                   Text(
@@ -91,15 +109,26 @@ class _ProfiledetailsState extends State<Profiledetails> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ProfileInfoRow(icon: Icons.factory, title: 'İşletme', value: Name),
+                          ProfileInfoRow(
+                              icon: Icons.factory,
+                              title: 'İşletme',
+                              value: Name),
                           Divider(),
-                          ProfileInfoRow(icon: Icons.phone, title: 'Telefon', value: phone),
+                          ProfileInfoRow(
+                              icon: Icons.phone,
+                              title: 'Telefon',
+                              value: phone),
                           Divider(),
-                          ProfileInfoRow(icon: Icons.home, title: 'Adres', value: address),
+                          ProfileInfoRow(
+                              icon: Icons.home, title: 'Adres', value: address),
                           Divider(),
-                          ProfileInfoRow(icon: Icons.fax, title: 'Fax', value: fax),
+                          ProfileInfoRow(
+                              icon: Icons.fax, title: 'Fax', value: fax),
                           Divider(),
-                          ProfileInfoRow(icon: Icons.description, title: 'Açıklama', value: description),
+                          ProfileInfoRow(
+                              icon: Icons.description,
+                              title: 'Açıklama',
+                              value: description),
                         ],
                       ),
                     ),
@@ -129,7 +158,8 @@ class ProfileInfoRow extends StatelessWidget {
   final String title;
   final String value;
 
-  const ProfileInfoRow({required this.icon, required this.title, required this.value});
+  const ProfileInfoRow(
+      {required this.icon, required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {

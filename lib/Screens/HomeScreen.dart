@@ -17,6 +17,7 @@ import 'package:project/Screens/ProfileDetails.dart';
 import 'package:project/Screens/ProfileScreen.dart';
 import 'package:project/constants.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:project/Screens/AllAdsScreen.dart';
 
 void main() => runApp(MyApp());
 
@@ -140,9 +141,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
-
-
 
 class Homescreen extends StatefulWidget {
   final String clientRef;
@@ -405,10 +403,18 @@ class _HomePageBodyState extends State<Homescreen> {
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         TextButton.icon(
-                          onPressed: () {}, // Tümünü gör butonuna işlev ekleyin
-                          icon: const Text("Tümünü Gör"),
-                          label: const Icon(IconlyLight.arrowRight2, size: 20),
-                        )
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    AllAdsScreen(clientRef: widget.clientRef),
+                              ),
+                            );
+                          },
+                          icon: Icon(Icons.list),
+                          label: Text('Tüm İlanları Gör'),
+                        ),
                       ],
                     ),
                   ),
